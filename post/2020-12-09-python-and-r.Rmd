@@ -1,13 +1,43 @@
 ---
-title: Python and R
+title: "Python and R"
 author: ''
 date: '2020-12-09'
-slug: python-and-r
-categories: []
-tags: []
 description: ''
+slug: python-and-r
+tags: []
+categories: []
 ---
 
-R and Python are two different programming languages that can do many similar things. I have mainly worked with R for statistical purposes (like making nice graphs!) and feel like I'm finally getting the hang of it :))
+```{R}
+library(reticulate)
+```
+
+
+#Introduction
+
+R and Python are two different programming languages that can do many similar things. I have mainly worked with R for statistical purposes (like making nice graphs!) and feel like I'm finally getting the hang of it :)
 
 Python, on the other hand, remains a mystery (especially regex) but is also immensely useful for statistics and other coding purposes. 
+
+Reticulate allows you to share things between R and Python. For example, if you want to use Python to manipulate a dataset in R, reticulate allows you to do that. 
+
+#Example
+
+Here's R code.
+
+```{R}
+library(nycflights13)
+library(tidyverse)
+
+flights<-flights
+
+head(flights)
+flights %>% summarize(mean(distance))
+```
+
+
+Here's Python code. Notice how it takes the flight dataset from R simply by adding some notation to the beginning of the line.
+
+```{python}
+r.flights.distance.mean()
+```
