@@ -7,3 +7,7 @@ categories: []
 tags: []
 description: ''
 ---
+
+R and Python are two different programming languages that can do many similar things. I have mainly worked with R for statistical purposes (like making nice graphs!) and feel like I'm finally getting the hang of it :))
+
+Python, on the other hand, remains a mystery (especially regex) but is also immensely useful for statistics and other coding purposes. 
