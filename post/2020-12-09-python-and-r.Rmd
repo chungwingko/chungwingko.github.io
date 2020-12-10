@@ -41,3 +41,10 @@ Here's Python code. Notice how it takes the flight dataset from R simply by addi
 ```{python}
 r.flights.distance.mean()
 ```
+
+<center>
+![](/post/2020-12-09-python-and-r_files/05onfire1_xp-articleLarge-v2.webp)
+
+(This is me finishing this semester)
+</center>
+
