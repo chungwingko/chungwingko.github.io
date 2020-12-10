@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Chung-Wing Ko" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Project 2: Modeling, Testing, and Predicting</title>
+    <meta name="generator" content="Hugo 0.79.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project2/">Project 2: Modeling, Testing, and Predicting</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         December 9, 2020 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="pts-introduce-dataset-and-variables" class="section level2">
+<h2>0. (5 pts) Introduce dataset and variables</h2>
+<div id="introduce-your-dataset-and-each-of-your-variables-or-just-your-main-variables-if-you-have-lots-in-a-paragraph.-what-are-they-measuring-how-many-observations" class="section level4">
+<h4>Introduce your dataset and each of your variables (or just your main variables if you have lots) in a paragraph. What are they measuring? How many observations?</h4>
+<pre class="r"><code>#loading libraries and importing datasets
+country &lt;- read.csv(&quot;Country Data.csv&quot;)
+sustainability &lt;- read.csv(&quot;Sustainability Stats.csv&quot;)
+population &lt;- read.csv(&quot;Population.csv&quot;)
+library(dplyr)
+
+#joining datasets
+data &lt;- inner_join(country, sustainability, by = &quot;Country.Name&quot;)
+data &lt;- inner_join(data, population, by = &quot;Country.Name&quot;)
+
+#removing and renaming columns
+colnames(data)</code></pre>
+<pre><code>## [1] &quot;Time.x&quot;
+## [2] &quot;Time.Code.x&quot;
+## [3] &quot;Country.Name&quot;
+## [4] &quot;Country.Code.x&quot;
+## [5] &quot;GDP..current.US....NY.GDP.MKTP.CD.&quot;
+## [6]
+&quot;Death.rate..crude..per.1.000.people...SP.DYN.CDRT.IN.&quot;
+## [7]
+&quot;Adolescent.fertility.rate..births.per.1.000.women.ages.15.19...SP.ADO.TFRT.&quot;
+## [8]
+&quot;Age.dependency.ratio....of.working.age.population...SP.POP.DPND.&quot;
+## [9] &quot;Time.y&quot;
+## [10] &quot;Time.Code.y&quot;
+## [11] &quot;Country.Code.y&quot;
+## [12]
+&quot;CO2.emissions..metric.tons.per.capita...EN.ATM.CO2E.PC.&quot;
+## [13] &quot;Forest.area....of.land.area...AG.LND.FRST.ZS.&quot;
+## [14]
+&quot;Renewable.energy.consumption....of.total.final.energy.consumption...EG.FEC.RNEW.ZS.&quot;
+## [15]
+&quot;People.using.at.least.basic.drinking.water.services....of.population...SH.H2O.BASW.ZS.&quot;
+## [16] &quot;Year&quot;
+## [17] &quot;Year.Code&quot;
+## [18] &quot;Country.Code&quot;
+## [19] &quot;Population..total..SP.POP.TOTL.&quot;</code></pre>
+<pre class="r"><code>data &lt;- data %&gt;% select(-Time.x, -Time.Code.x, -Time.y, -Time.Code.y, -Country.Code.x, -Country.Code.y, -Year, -Year.Code, -Country.Code)
+data &lt;- data %&gt;% rename(Country_Name = Country.Name, GDP = GDP..current.US....NY.GDP.MKTP.CD., Death_rate = Death.rate..crude..per.1.000.people...SP.DYN.CDRT.IN., Age_dependency_ratio = Age.dependency.ratio....of.working.age.population...SP.POP.DPND., Adolescent_fertility_rate = Adolescent.fertility.rate..births.per.1.000.women.ages.15.19...SP.ADO.TFRT., CO2_emissions_per_capita = CO2.emissions..metric.tons.per.capita...EN.ATM.CO2E.PC., Forest_area = Forest.area....of.land.area...AG.LND.FRST.ZS., Drinking_services = People.using.at.least.basic.drinking.water.services....of.population...SH.H2O.BASW.ZS., Renewable_energy_consumption = Renewable.energy.consumption....of.total.final.energy.consumption...EG.FEC.RNEW.ZS., Population = Population..total..SP.POP.TOTL.)
+
+#omitting NA values
+data &lt;- data %&gt;% na.omit()
+
+#making new numeric variable
+data &lt;- data %&gt;% mutate(GDP_per_capita = GDP/Population)
+
+#making new categorical variable based on World Bank classifications
+data &lt;- data %&gt;% mutate(Income_Level = case_when(GDP_per_capita &gt; 12535 ~ &quot;high&quot;, GDP_per_capita &lt;= 12535 &amp; 4045 &lt;= GDP_per_capita ~ &quot;upper-middle&quot;, GDP_per_capita &lt;= 4045 &amp; 1035 &lt;= GDP_per_capita ~ &quot;lower-middle&quot;, GDP_per_capita &lt;= 1035 ~ &quot;low&quot;))
+
+#reorder income level
+data$Income_Level &lt;- factor(data$Income_Level, levels = c(&quot;low&quot;, &quot;lower-middle&quot;, &quot;upper-middle&quot;, &quot;high&quot;))
+
+#reordering variables in dataset
+data &lt;- data %&gt;% select(Country_Name, GDP, GDP_per_capita, Income_Level, CO2_emissions_per_capita, Population, everything())</code></pre>
+<p>I found three datasets through the World Bank Databank, found here: <a href="https://databank.worldbank.org/home.aspx" class="uri">https://databank.worldbank.org/home.aspx</a>. Datasets can be filtered based on countries, statistics, and years. I chose statistics from Gender Statistics, Poverty Statistics, and Sustainable Development Goals, using the year 2015 as the base year for all three datasets. The Gender Statistics dataset contained these variables: GDP, Death rate, Adolescent fertility rate, and Age dependency ratio. The Poverty Statistics dataset contains the Population statistic, and the Sustainability Development Goals dataset contains CO2 emissions per capita, Forest area, Renewable resource consumption, and Access to drinking water services. I'm particularly interested in how a country's income level (based on GDP) impacts societal issues such as access to drinking water and adolescent fertility rate, as well as sustainability variables such as CO2 emissions and forest cover. I expect higher GDP to correlate to a higher standard of living (lower death rate, lower adolescent fertility rate, lower age dependency ratio, more access to drinking water services) and worse sustainability initiatives (such as higher CO2, less forest cover, but higher renewable resource consumption). There are 173 observations for every variable.</p>
+</div>
+</div>
+<div id="pts-manova-and-followup-anovas-and-post-hoc-tests" class="section level2">
+<h2>1. (15 pts) MANOVA and followup ANOVAs and post-hoc tests</h2>
+<div id="perform-a-manova-testing-whether-any-of-your-numeric-variables-or-a-subset-of-them-if-including-them-all-is-unreasonable-or-doesnt-make-sense-show-a-mean-difference-across-levels-of-one-of-your-categorical-variables-3.-if-they-do-perform-univariate-anovas-to-find-responses-showing-a-mean-difference-across-groups-3-and-perform-post-hoc-t-tests-to-find-which-groups-differ-3.-discuss-the-number-of-tests-you-have-performed-calculate-the-probability-of-at-least-one-type-i-error-if-unadjusted-and-adjust-the-significance-level-accordingly-bonferroni-correction-before-discussing-significant-differences-3." class="section level4">
+<h4>Perform a MANOVA testing whether any of your numeric variables (or a subset of them, if including them all is unreasonable or doesn't make sense) show a mean difference across levels of one of your categorical variables (3). If they do, perform univariate ANOVAs to find response(s) showing a mean difference across groups (3), and perform post-hoc t tests to find which groups differ (3). Discuss the number of tests you have performed, calculate the probability of at least one type I error (if unadjusted), and adjust the significance level accordingly (bonferroni correction) before discussing significant differences (3).</h4>
+<pre class="r"><code>#run overall MANOVA
+manova &lt;- manova(cbind(GDP_per_capita, Death_rate, CO2_emissions_per_capita)~Income_Level, data=data)
+summary(manova)</code></pre>
+<pre><code>## Df Pillai approx F num Df den Df Pr(&gt;F)
+## Income_Level 3 0.80892 20.797 9 507 &lt; 2.2e-16 ***
+## Residuals 169
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#follow up ANOVA tests
+summary.aov(manova)</code></pre>
+<pre><code>## Response GDP_per_capita :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## Income_Level 3 2.9611e+10 9870435132 91.182 &lt; 2.2e-16
+***
+## Residuals 169 1.8294e+10 108250008
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response Death_rate :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## Income_Level 3 81.74 27.2475 4.323 0.005766 **
+## Residuals 169 1065.19 6.3029
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response CO2_emissions_per_capita :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## Income_Level 3 1460.1 486.70 48.924 &lt; 2.2e-16 ***
+## Residuals 169 1681.2 9.95
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#post-hoc t tests
+pairwise.t.test(data$GDP_per_capita,data$Income_Level, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  data$GDP_per_capita and data$Income_Level 
+## 
+##              low    lower-middle upper-middle
+## lower-middle 0.513  -            -           
+## upper-middle 0.014  0.020        -           
+## high         &lt;2e-16 &lt;2e-16       &lt;2e-16      
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(data$Death_rate,data$Income_Level, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  data$Death_rate and data$Income_Level 
+## 
+##              low    lower-middle upper-middle
+## lower-middle 0.0362 -            -           
+## upper-middle 0.0393 0.9971       -           
+## high         0.7230 0.0043       0.0052      
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(data$CO2_emissions_per_capita,data$Income_Level, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>##
+## Pairwise comparisons using t tests with pooled SD
+##
+## data: data$CO2_emissions_per_capita and
+data$Income_Level
+##
+## low lower-middle upper-middle
+## lower-middle 0.16 - -
+## upper-middle 3.0e-07 1.4e-06 -
+## high &lt; 2e-16 &lt; 2e-16 3.3e-08
+##
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>#calculating probability of at least one type 1 error
+1 - (0.5^22)</code></pre>
+<pre><code>## [1] 0.9999998</code></pre>
+<pre class="r"><code>#bonferroni adjustment
+0.05/22</code></pre>
+<pre><code>## [1] 0.002272727</code></pre>
+<p>I conducted 1 MANOVA, 3 ANOVAs, and 18 pairwise t tests, for a total of 22 tests. There was a 99.99% chance of at least one type 1 error, so I adjusted the alpha level using a Bonferroni adjustment to set the alpha level to 0.0023. The MANOVA had a p value of p &lt; 2.2e-16, allowing us to reject the null hypothesis that the mean GDP per capita, mean death rate, and mean CO2 emissions per capita are the same across all country income levels. I ran three univariate ANOVAs to test which of the three variables were significant. Both ANOVAs for GDP per capita and CO2 emissions per capita had a p value of p &lt; 2.2e-16, allowing us to reject the null hypotheses that the mean GDP per capita and mean CO2 emissions per capita are the same across all country income levels. The ANOVA run for the death rate variable had a p value of 0.0058, which is greater than the adjusted alpha level, so we fail to reject the null hypothesis that the mean death rate is the same across all country income levels. Pairwise t tests for the GDP per capita variable revealed a significant difference between the high income level countries and every other income level, with p &lt; 2.2e-16. Pairwise t tests for the CO2 emissions per capita variable revealed similar differences between mean emissions of the high income level countries and every other income level, as well as significant differences between mean emissions of the upper-middle income level and every other level.</p>
+</div>
+<div id="briefly-discuss-manova-assumptions-and-whether-or-not-they-are-likely-to-have-been-met-no-need-for-anything-too-in-depth-2." class="section level4">
+<h4>Briefly discuss MANOVA assumptions and whether or not they are likely to have been met (no need for anything too in-depth) (2).</h4>
+<pre class="r"><code>#assumptions
+##multivariate normality
+data %&gt;% group_by(Income_Level) %&gt;% summarize(n())</code></pre>
+<pre><code>## # A tibble: 4 x 2
+##   Income_Level `n()`
+##   &lt;fct&gt;        &lt;int&gt;
+## 1 low             25
+## 2 lower-middle    57
+## 3 upper-middle    51
+## 4 high            40</code></pre>
+<pre class="r"><code>##homogeneity of (co)variances
+covmats &lt;- data %&gt;% select(GDP_per_capita, Death_rate, CO2_emissions_per_capita, Income_Level) %&gt;% group_by(Income_Level) %&gt;% do(covs = cov(.[1:3]))
+for(i in 1:4){print(as.character(covmats$Income_Level[i])); print(covmats$covs[[i]])}</code></pre>
+<pre><code>## [1] &quot;low&quot;
+## GDP_per_capita Death_rate CO2_emissions_per_capita
+## GDP_per_capita 29390.23850 -111.1193187 11.94792937
+## Death_rate -111.11932 4.6254079 -0.10464259
+## CO2_emissions_per_capita 11.94793 -0.1046426 0.01458778
+## [1] &quot;lower-middle&quot;
+## GDP_per_capita Death_rate CO2_emissions_per_capita
+## GDP_per_capita 886421.7442 -105.1851181 504.5204518
+## Death_rate -105.1851 6.3135363 0.2927279
+## CO2_emissions_per_capita 504.5205 0.2927279 1.4042847
+## [1] &quot;upper-middle&quot;
+## GDP_per_capita Death_rate CO2_emissions_per_capita
+## GDP_per_capita 5161426.2702 535.900555 1744.993439
+## Death_rate 535.9006 8.059109 2.272591
+## CO2_emissions_per_capita 1744.9934 2.272591 8.151599
+## [1] &quot;high&quot;
+## GDP_per_capita Death_rate CO2_emissions_per_capita
+## GDP_per_capita 461175256.08 -15715.848331 27892.687909
+## Death_rate -15715.85 5.068485 -2.307745
+## CO2_emissions_per_capita 27892.69 -2.307745 30.632546</code></pre>
+<p>Regarding assumptions, random samples and independent observations was met. Multivariate normality of dependent variables was met, because every group had 25 or more samples. Examination of covariance matrices for each group revealed relative homogeneity. No univariate or multivariate outliers were evident and MANOVA was considered to be an appropriate analysis technique.</p>
+</div>
+</div>
+<div id="pts-randomization-test" class="section level2">
+<h2>2. (10 pts) Randomization test</h2>
+<div id="perform-some-kind-of-randomization-test-on-your-data-that-makes-sense.-the-statistic-can-be-anything-you-want-mean-difference-correlation-f-statisticanova-chi-squared-etc.-state-null-and-alternative-hypotheses-perform-the-test-and-interpret-the-results-7.-create-a-plot-visualizing-the-null-distribution-and-the-test-statistic-3." class="section level4">
+<h4>Perform some kind of randomization test on your data (that makes sense). The statistic can be anything you want (mean difference, correlation, F-statistic/ANOVA, chi-squared), etc. State null and alternative hypotheses, perform the test, and interpret the results (7). Create a plot visualizing the null distribution and the test statistic (3).</h4>
+<pre class="r"><code>#load libraries
+library(vegan)
+
+#compute euclidean distances between all pairs of points in GDP per capita/Death rate/CO2 emissions space
+dists &lt;- data %&gt;% select(GDP_per_capita, Death_rate, CO2_emissions_per_capita) %&gt;% dist
+adonis(dists ~ Income_Level,data=data)</code></pre>
+<pre><code>##
+## Call:
+## adonis(formula = dists ~ Income_Level, data = data)
+##
+## Permutation: free
+## Number of permutations: 999
+##
+## Terms added sequentially (first to last)
+##
+## Df SumsOfSqs MeanSqs F.Model R2 Pr(&gt;F)
+## Income_Level 3 2.9611e+10 9870435646 91.182 0.61812
+0.001 ***
+## Residuals 169 1.8294e+10 108250024 0.38188
+## Total 172 4.7906e+10 1.00000
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>data %&gt;% group_by(Income_Level) %&gt;% summarize(n())</code></pre>
+<pre><code>## # A tibble: 4 x 2
+##   Income_Level `n()`
+##   &lt;fct&gt;        &lt;int&gt;
+## 1 low             25
+## 2 lower-middle    57
+## 3 upper-middle    51
+## 4 high            40</code></pre>
+<pre class="r"><code>#compute observed F stat
+SST &lt;- sum(dists^2)/173
+SSW &lt;- data %&gt;% group_by(Income_Level) %&gt;% select(Income_Level, GDP_per_capita, Death_rate, CO2_emissions_per_capita) %&gt;% do(d=dist(.[2:4],&quot;euclidean&quot;)) %&gt;% ungroup() %&gt;% summarize(sum(d[[1]]^2)/25 + sum(d[[2]]^2)/57+ sum(d[[3]]^2)/51 + sum(d[[4]]^2)/40) %&gt;% pull
+F_obs&lt;-((SST-SSW)/3)/(SSW/139)
+
+Fs &lt;- replicate(1000,{
+  new &lt;- data %&gt;% mutate(Income_Level=sample(Income_Level)) 
+  SSW &lt;- new %&gt;% group_by(Income_Level) %&gt;% select(Income_Level, GDP_per_capita, Death_rate, CO2_emissions_per_capita) %&gt;%
+    do(d=dist(.[2:4],&quot;euclidean&quot;)) %&gt;% ungroup() %&gt;% 
+    summarize(sum(d[[1]]^2)/25 + sum(d[[2]]^2)/57+ sum(d[[3]]^2)/51 + sum(d[[4]]^2)/40) %&gt;% pull
+  ((SST-SSW)/3)/(SSW/139)
+})
+
+#plot
+{hist(Fs,prob = T); abline(v=F_obs, col=&quot;red&quot;, add=T)}</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#calculate p value
+mean(Fs&gt;F_obs)</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>I conducted a randomization test on the F statistics for my data. The null hypothesis for this randomization test is that all group means are equal regardless of country income level, and the alternative hypothesis is that all groups do not have the same means. This test yielded a p-value of effectively 0, so we reject the null hypothesis and conclude that the mean GDP per capita, mean death rate, and/or mean CO2 emissions per capita differ based on country income level.</p>
+</div>
+</div>
+<div id="pts-linear-regression-model" class="section level2">
+<h2>3. (35 pts) Linear regression model</h2>
+<div id="build-a-linear-regression-model-predicting-one-of-your-response-variables-from-at-least-2-other-variables-including-their-interaction.-mean-center-any-numeric-variables-involved-in-the-interaction.-interpret-the-coefficient-estimates-do-not-discuss-significance-10" class="section level4">
+<h4>Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction. Interpret the coefficient estimates (do not discuss significance) (10)</h4>
+<pre class="r"><code>#center variables
+data$CO2_emissions_per_capita_c &lt;- data$CO2_emissions_per_capita - mean(data$CO2_emissions_per_capita)
+data$Population_c &lt;- data$Population - mean(data$Population)
+mean(data$Population)</code></pre>
+<pre><code>## [1] 203481730</code></pre>
+<pre class="r"><code>#linear regression model
+fit &lt;- lm(CO2_emissions_per_capita_c ~ Population_c*Income_Level, data=data)
+summary(fit)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = CO2_emissions_per_capita_c ~ Population_c *
+Income_Level,
+## data = data)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -6.0495 -1.1881 -0.3034 0.3796 25.7461
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) -3.393e+00 1.073e+00 -3.161 0.00187 **
+## Population_c 9.563e-11 5.486e-09 0.017 0.98611
+## Income_Levellower-middle 1.056e+00 1.153e+00 0.916
+0.36113
+## Income_Levelupper-middle 4.080e+00 1.164e+00 3.504
+0.00059 ***
+## Income_Levelhigh 8.209e+00 1.215e+00 6.757 2.31e-10 ***
+## Population_c:Income_Levellower-middle -8.834e-11
+5.549e-09 -0.016 0.98732
+## Population_c:Income_Levelupper-middle -9.583e-12
+5.498e-09 -0.002 0.99861
+## Population_c:Income_Levelhigh 1.921e-09 5.883e-09 0.327
+0.74445
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 3.183 on 165 degrees of freedom
+## Multiple R-squared: 0.4679, Adjusted R-squared: 0.4453
+## F-statistic: 20.73 on 7 and 165 DF, p-value: &lt; 2.2e-16</code></pre>
+<p>A low-income country with a population of 203481730 (global mean) would emit -3.39 metric tons per capita. For low-income countries, for every additional person to a country's population, there is a 9.56e-11 metric ton increase in CO2 emissions per capita, on average. For average populations, lower-middle income countries emit .056 more metric tons of CO2 emissions per capita than low-income countries. While holding population constant, upper-middle income countries emit 3.08 more metric tons of CO2 emissions per capita than low-income countries. While holding population constant, high income countries emit 7.21 more metric tons of CO2 emissions per capita than low-income countries. The slope of CO2 emissions per capita from population is 7.83e-11 units lower for a lower-middle income country than a low-income country. The slope of CO2 emissions per capita from population is 8.58e-12 units lower for a upper-middle income country than a low-income country. The slope of CO2 emissions per capita from population is .92e9 units higher for a high income country than a low-income country.</p>
+</div>
+<div id="plot-the-regression-using-ggplot-using-geom_smoothmethodlm.-if-your-interaction-is-numeric-by-numeric-refer-to-code-in-the-slides-to-make-the-plot-or-check-out-the-interactions-package-which-makes-this-easier.-if-you-have-3-or-more-predictors-just-chose-two-of-them-to-plot-for-convenience.-8" class="section level4">
+<h4>Plot the regression using <code>ggplot()</code> using geom_smooth(method=&quot;lm&quot;). If your interaction is numeric by numeric, refer to code in the slides to make the plot or check out the <code>interactions</code> package, which makes this easier. If you have 3 or more predictors, just chose two of them to plot for convenience. (8)</h4>
+<pre class="r"><code>#plot regression
+data %&gt;% ggplot(aes(x = Population_c, y = CO2_emissions_per_capita_c, color = Income_Level)) + geom_point() + geom_smooth(method = &#39;lm&#39;,se=F) + labs(x = &quot;Population, centered&quot;, y = &quot;CO2 emissions per capita, centered (metric tons)&quot;, title = &quot;CO2 emissions per capita by country population and income level&quot;, color = &quot;Income Level&quot;)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+<div id="check-assumptions-of-linearity-normality-and-homoskedasticity-either-graphically-or-using-a-hypothesis-test-4" class="section level4">
+<h4>Check assumptions of linearity, normality, and homoskedasticity either graphically or using a hypothesis test (4)</h4>
+<pre class="r"><code>#load libraries
+library(lmtest)
+
+#check homoskedasticity
+resids &lt;- fit$residuals
+fitvals &lt;- fit$fitted.values
+ggplot()+ geom_point(aes(fitvals,resids)) + geom_hline(yintercept=0, col=&quot;red&quot;)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>bptest(fit)</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  fit
+## BP = 9.0487, df = 7, p-value = 0.2492</code></pre>
+<pre class="r"><code>#check linearity
+data %&gt;% ggplot(aes(x = Population_c, y = CO2_emissions_per_capita_c)) + geom_point()</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-7-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#check normality
+ggplot()+geom_histogram(aes(resids),bins=20)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-7-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(color = &quot;red&quot;)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-7-4.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ks.test(resids, &quot;pnorm&quot;, sd=sd(resids))</code></pre>
+<pre><code>## 
+##  One-sample Kolmogorov-Smirnov test
+## 
+## data:  resids
+## D = 0.22085, p-value = 9.368e-08
+## alternative hypothesis: two-sided</code></pre>
+<p>We fail to reject the null hypothesis of homoskedasticity (BP = 9.0487, df = 7, p-value = 0.2492). We fail to reject the null hypothesis of normality (D = 0.22085, p-value = 9.368e-08). Eyeballing the scatterplot, there are no obvious nonlinear relationships.</p>
+</div>
+<div id="regardless-recompute-regression-results-with-robust-standard-errors-via-coeftest...-vcovvcovhc....-discuss-significance-of-results-including-any-changes-from-beforeafter-robust-ses-if-applicable.-8" class="section level4">
+<h4>Regardless, recompute regression results with robust standard errors via <code>coeftest(..., vcov=vcovHC(...))</code>. Discuss significance of results, including any changes from before/after robust SEs if applicable. (8)</h4>
+<pre class="r"><code>#load libraries
+library(sandwich)
+#redo regression with heteroskedasticity robust standard errors
+coeftest(fit, vcov = vcovHC(fit))</code></pre>
+<pre><code>##
+## t test of coefficients:
+##
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) -3.3932e+00 2.1558e-01 -15.7398 &lt; 2.2e-16
+***
+## Population_c 9.5633e-11 1.1845e-09 0.0807 0.9357495
+## Income_Levellower-middle 1.0561e+00 2.6706e-01 3.9545
+0.0001136 ***
+## Income_Levelupper-middle 4.0802e+00 4.7129e-01 8.6574
+4.189e-15 ***
+## Income_Levelhigh 8.2087e+00 8.7139e-01 9.4202 &lt; 2.2e-16
+***
+## Population_c:Income_Levellower-middle -8.8336e-11
+1.1956e-09 -0.0739 0.9411942
+## Population_c:Income_Levelupper-middle -9.5830e-12
+1.2104e-09 -0.0079 0.9936924
+## Population_c:Income_Levelhigh 1.9209e-09 2.4690e-09
+0.7780 0.4376827
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<p>There are no changes to coefficients between robust SEs and uncorrected SEs, because the data passed homoskedasticity. However, the variable of lower-middle income level previously was not significant, and now is (p = 0.0001), showing that while holding population constant, lower-middle income countries emit .056 more metric tons of CO2 emissions per capita than low-income countries. All the p-values have decreased with robust SEs.</p>
+</div>
+<div id="what-proportion-of-the-variation-in-the-outcome-does-your-model-explain-4" class="section level4">
+<h4>What proportion of the variation in the outcome does your model explain? (4)</h4>
+<pre class="r"><code>summary(fit)$r.squared</code></pre>
+<pre><code>## [1] 0.4678821</code></pre>
+<p>My model explains 46.79% of the variation in CO2 emissions per capita.</p>
+</div>
+</div>
+<div id="pts-bootstrapped-ses" class="section level2">
+<h2>4. (5 pts) Bootstrapped SEs</h2>
+<div id="rerun-same-regression-model-with-the-interaction-but-this-time-compute-bootstrapped-standard-errors-either-by-resampling-observations-or-residuals.-discuss-any-changes-you-observe-in-ses-and-p-values-using-these-ses-compared-to-the-original-ses-and-the-robust-ses" class="section level4">
+<h4>Rerun same regression model (with the interaction), but this time compute bootstrapped standard errors (either by resampling observations or residuals). Discuss any changes you observe in SEs and p-values using these SEs compared to the original SEs and the robust SEs)</h4>
+<pre class="r"><code>#resample observations from dataframe with replacement
+boot_dat &lt;- sample_frac(data, replace=T)
+
+samp_distn &lt;-replicate(5000, {
+  boot_dat &lt;- sample_frac(data, replace=T)
+  fit &lt;- lm(CO2_emissions_per_capita_c ~ Population_c*Income_Level, data=boot_dat)
+  coef(fit)
+})
+
+#standard errors
+samp_distn %&gt;% t %&gt;% as.data.frame %&gt;% summarize_all(sd)</code></pre>
+<pre><code>## (Intercept) Population_c Income_Levellower-middle
+Income_Levelupper-middle Income_Levelhigh
+## 1 0.1538698 8.655398e-10 0.2184033 0.4614709 1.82645
+## Population_c:Income_Levellower-middle
+Population_c:Income_Levelupper-middle
+## 1 8.897961e-10 1.227482e-09
+## Population_c:Income_Levelhigh
+## 1 9.646698e-09</code></pre>
+<pre class="r"><code>#compare to normal-theory SEs
+summary(fit)$coef[,1:4]</code></pre>
+<pre><code>## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) -3.393218e+00 1.073342e+00 -3.161358731
+1.868951e-03
+## Population_c 9.563263e-11 5.485547e-09 0.017433564
+9.861118e-01
+## Income_Levellower-middle 1.056107e+00 1.153248e+00
+0.915767195 3.611255e-01
+## Income_Levelupper-middle 4.080171e+00 1.164357e+00
+3.504225374 5.896045e-04
+## Income_Levelhigh 8.208734e+00 1.214847e+00 6.757010100
+2.306820e-10
+## Population_c:Income_Levellower-middle -8.833619e-11
+5.549279e-09 -0.015918499 9.873186e-01
+## Population_c:Income_Levelupper-middle -9.582985e-12
+5.497768e-09 -0.001743068 9.986113e-01
+## Population_c:Income_Levelhigh 1.920897e-09 5.883160e-09
+0.326507726 7.444540e-01</code></pre>
+<pre class="r"><code>#compare to robust SEs
+coeftest(fit, vcov=vcovHC(fit))[,1:4]</code></pre>
+<pre><code>## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) -3.393218e+00 2.155816e-01 -15.739831808
+1.123500e-34
+## Population_c 9.563263e-11 1.184506e-09 0.080736292
+9.357495e-01
+## Income_Levellower-middle 1.056107e+00 2.670633e-01
+3.954519471 1.136026e-04
+## Income_Levelupper-middle 4.080171e+00 4.712933e-01
+8.657390975 4.188559e-15
+## Income_Levelhigh 8.208734e+00 8.713936e-01 9.420237459
+3.946199e-17
+## Population_c:Income_Levellower-middle -8.833619e-11
+1.195647e-09 -0.073881498 9.411942e-01
+## Population_c:Income_Levelupper-middle -9.582985e-12
+1.210364e-09 -0.007917438 9.936924e-01
+## Population_c:Income_Levelhigh 1.920897e-09 2.469017e-09
+0.778000739 4.376827e-01</code></pre>
+<p>Bootstrapped SEs, as compared to normal-theory SEs and robust SEs, are lower except for where the variable of high-income level is included. Therefore, bootstrapping generally decreases the p-value. The SE for the high-income variable and interaction between population and high-income level increased upon bootstrapping, increasing the p-value.</p>
+</div>
+</div>
+<div id="pts-logistic-model-from-two-explanatory-variables" class="section level2">
+<h2>5. (25 pts) Logistic model from two explanatory variables</h2>
+<div id="fit-a-logistic-regression-model-predicting-a-binary-variable-if-you-dont-have-one-makeget-one-from-at-least-two-explanatory-variables-interaction-not-necessary." class="section level4">
+<h4>Fit a logistic regression model predicting a binary variable (if you don't have one, make/get one) from at least two explanatory variables (interaction not necessary).</h4>
+</div>
+<div id="interpret-coefficient-estimates-in-context-10" class="section level4">
+<h4>Interpret coefficient estimates in context (10)</h4>
+<pre class="r"><code>#making binary variable of CO2 emissions
+data &lt;- data %&gt;% mutate(Carbon_Intensive = ifelse(CO2_emissions_per_capita &gt; median(CO2_emissions_per_capita), 1, 0))
+
+#center variables
+data$GDP_per_capita_c &lt;- data$GDP_per_capita - mean(data$GDP_per_capita)
+data$Population_c &lt;- data$Population - mean(data$Population)
+
+#logistic model
+logfit &lt;- glm(Carbon_Intensive ~ GDP_per_capita_c * Population_c, data = data, family = &quot;binomial&quot;)
+coeftest(logfit)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) 2.1633e+01 1.1333e+01 1.9088 0.05628 .
+## GDP_per_capita_c 3.0180e-03 1.5183e-03 1.9878 0.04684 *
+## Population_c 9.5668e-08 5.7794e-08 1.6553 0.09786 .
+## GDP_per_capita_c:Population_c 1.2678e-11 7.7487e-12
+1.6361 0.10181
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#convert to odds
+coef(logfit)%&gt;%exp%&gt;%round(5)%&gt;%data.frame</code></pre>
+<pre><code>##                                          .
+## (Intercept)                   2.483852e+09
+## GDP_per_capita_c              1.003020e+00
+## Population_c                  1.000000e+00
+## GDP_per_capita_c:Population_c 1.000000e+00</code></pre>
+<p>I made a binary variable called &quot;Carbon_Intensive,&quot; classifying countries into those that are carbon-intense and those that are not. I originally hoped to classify based on a cutoff, but scientists have not reached a consensus what a safe CO2 emissions cutoff is (<a href="https://e360.yale.edu/features/what_is_the_carbon_limit_that_depends_who_you_ask" class="uri">https://e360.yale.edu/features/what_is_the_carbon_limit_that_depends_who_you_ask</a>). Therefore, I classified countries based on the upper-half of emitters and the bottom-half, which may not be the most accurate way to create this variable so introduces some potential for error.</p>
+<p>Based on an alpha-level of 0.05, only GDP per capita significantly explains whether a country is carbon-intensive. For countries with average population, increasing GDP per capita by $1 (US dollar) increases the odds of a country being carbon-intense by 0.302% (SE = 1.5183e-03, z = 1.9878, p = 0.04684).</p>
+<p>For countries with average GDP per capita, increasing the population by 1 person increases the odds of a country being carbon-intense by 0.0000096% (SE = 5.78e-08, z = 1.6553, p = 0.09786). Increasing the population by one person additionally increases the slope of GDP per capita on the odds of a country being carbon-intense by 0.000000000127% (SE = 7.7487e-12, z = 1.6361, p = 0.10181).</p>
+</div>
+<div id="report-a-confusion-matrix-for-your-logistic-regression-2" class="section level4">
+<h4>Report a confusion matrix for your logistic regression (2)</h4>
+<pre class="r"><code>data$probs &lt;- predict(logfit, type=&quot;response&quot;)
+predict &lt;- data$probs &gt; 0.5
+truth &lt;- data$Carbon_Intensive
+table(predict, truth) %&gt;% addmargins</code></pre>
+<pre><code>##        truth
+## predict   0   1 Sum
+##   FALSE  82  13  95
+##   TRUE    5  73  78
+##   Sum    87  86 173</code></pre>
+</div>
+<div id="compute-and-discuss-the-accuracy-sensitivity-tpr-specificity-tnr-precision-ppv-and-auc-of-your-model-5" class="section level4">
+<h4>Compute and discuss the Accuracy, Sensitivity (TPR), Specificity (TNR), Precision (PPV), and AUC of your model (5)</h4>
+<pre class="r"><code>class_diag &lt;- function(probs,truth){
+  tab&lt;-table(factor(probs&gt;.5,levels=c(&quot;FALSE&quot;,&quot;TRUE&quot;)),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+  if(is.numeric(truth)==FALSE &amp; is.logical(truth)==FALSE) truth&lt;-as.numeric(truth)-1
+  #calculate AUC
+  ord&lt;-order(probs, decreasing=TRUE)
+  probs &lt;- probs[ord]; truth &lt;- truth[ord]
+  TPR=cumsum(truth)/max(1,sum(truth))
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup&lt;-c(probs[-1]&gt;=probs[-length(probs)], FALSE)
+  TPR&lt;-c(0,TPR[!dup],1); FPR&lt;-c(0,FPR[!dup],1)
+  
+  n &lt;- length(TPR)
+  auc&lt;- sum(((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]))
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+class_diag(data$probs, data$Carbon_Intensive)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.8959538 0.8488372 0.9425287 0.9358974 0.9628442</code></pre>
+<p>My model has an accuracy of 89.6%, a sensitivity of 84.9%, a specificity of 94.3%, and a precision of 93.6%. This likely indicates a good AUC, which summarizes both sensitivity and specificity. The AUC is calculated to be 0.963, which indicates the model is a great predictor.</p>
+</div>
+<div id="using-ggplot-make-a-density-plot-of-the-log-odds-logit-coloredgrouped-by-your-binary-outcome-variable-3" class="section level4">
+<h4>Using ggplot, make a density plot of the log-odds (logit) colored/grouped by your binary outcome variable (3)</h4>
+<pre class="r"><code>#get predicted log-odds
+data$logit &lt;- predict(logfit, type=&quot;link&quot;)
+
+CarbonIntense &lt;- as.factor(data$Carbon_Intensive)
+
+data %&gt;% ggplot(aes(x = logit)) + geom_density(aes(color= CarbonIntense,fill= CarbonIntense), alpha=.4) + theme(legend.position=c(.85,.85)) + geom_vline(xintercept=0) + xlab(&quot;predictor (logit)&quot;)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-14-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+<div id="generate-an-roc-curve-plot-and-calculate-auc-either-manually-or-with-a-package-interpret-5" class="section level4">
+<h4>Generate an ROC curve (plot) and calculate AUC (either manually or with a package); interpret (5)</h4>
+<pre class="r"><code>library(plotROC)
+ROCplot&lt;-ggplot(data)+geom_roc(aes(d=Carbon_Intensive,m=data$prob), n.cuts=0)+
+geom_segment(aes(x=0,xend=1,y=0,yend=1),lty=2)
+ROCplot</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-15-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.9628442</code></pre>
+<p>The AUC is 0.963, which shows the model is a great predictor overall.</p>
+</div>
+</div>
+<div id="pts-logistic-regression-from-all-variables" class="section level2">
+<h2>6. (25 pts) Logistic regression from all variables</h2>
+<div id="perform-a-logistic-regression-predicting-the-same-binary-response-variable-from-all-of-the-rest-of-your-variables-the-more-the-better" class="section level4">
+<h4>Perform a logistic regression predicting the same binary response variable from <em>ALL</em> of the rest of your variables (the more, the better!)</h4>
+<pre class="r"><code>datapt2 &lt;- data %&gt;% select(GDP, GDP_per_capita_c, Income_Level, Carbon_Intensive, Population_c, Death_rate, Adolescent_fertility_rate, Age_dependency_ratio, Forest_area, Renewable_energy_consumption, Drinking_services)
+
+fulllogfit &lt;- glm(Carbon_Intensive ~ ., data = datapt2, family = &quot;binomial&quot;)
+coeftest(fulllogfit)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) -1.7860e+01 1.8751e+03 -0.0095 0.992400
+## GDP 3.2827e-12 4.2276e-12 0.7765 0.437448
+## GDP_per_capita_c 1.3894e-04 1.1958e-04 1.1619 0.245279
+## Income_Levellower-middle 1.2630e+01 1.8751e+03 0.0067
+0.994626
+## Income_Levelupper-middle 1.4752e+01 1.8751e+03 0.0079
+0.993723
+## Income_Levelhigh 1.4279e+01 1.8751e+03 0.0076 0.993924
+## Population_c -7.6957e-09 1.3328e-08 -0.5774 0.563649
+## Death_rate 3.0398e-01 1.4626e-01 2.0784 0.037672 *
+## Adolescent_fertility_rate 1.7003e-03 1.4485e-02 0.1174
+0.906553
+## Age_dependency_ratio -3.4270e-02 3.9958e-02 -0.8576
+0.391091
+## Forest_area 4.0923e-03 1.4412e-02 0.2840 0.776444
+## Renewable_energy_consumption -6.8766e-02 2.4854e-02
+-2.7668 0.005661 **
+## Drinking_services 4.5106e-02 4.9659e-02 0.9083 0.363714
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#convert to odds
+coef(fulllogfit)%&gt;%exp%&gt;%round(5)%&gt;%data.frame</code></pre>
+<pre><code>##                                         .
+## (Intercept)                  0.000000e+00
+## GDP                          1.000000e+00
+## GDP_per_capita_c             1.000140e+00
+## Income_Levellower-middle     3.054996e+05
+## Income_Levelupper-middle     2.552027e+06
+## Income_Levelhigh             1.589124e+06
+## Population_c                 1.000000e+00
+## Death_rate                   1.355240e+00
+## Adolescent_fertility_rate    1.001700e+00
+## Age_dependency_ratio         9.663100e-01
+## Forest_area                  1.004100e+00
+## Renewable_energy_consumption 9.335500e-01
+## Drinking_services            1.046140e+00</code></pre>
+<p>Based on this logistic regression, death rate and renewable energy consumption of each country are significant predictors as to whether a country is carbon-intensive. While holding all other variables constant, increasing the death rate by 1 person (measured by the number of deaths per 1000 population) increases the odds of a country being carbon-intense by 36% (SE = 1.4626e-01, z = 2.0784, p = 0.037672). While holding all other variables constant, increasing the renewable energy consumption by 1% (measured as a % of total final energy consumption) decreases the odds of a country being carbon-intense by 6.65% (SE = 2.4854e-02, z = -2.7668, p = 0.005661).</p>
+</div>
+<div id="fit-model-compute-in-sample-classification-diagnostics-accuracy-sensitivity-specificity-precision-auc-and-interpret-5" class="section level4">
+<h4>Fit model, compute in-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, AUC), and interpret (5)</h4>
+<pre class="r"><code>probs &lt;- predict(fulllogfit, type = &quot;response&quot;)
+class_diag(probs, datapt2$Carbon_Intensive)</code></pre>
+<pre><code>##         acc      sens     spec       ppv      auc
+## 1 0.9190751 0.9302326 0.908046 0.9090909 0.981823</code></pre>
+<p>My model has an accuracy of 91.9%, a sensitivity of 93.02%, a specificity of 90.8%, and a precision of 90.9%. The AUC is 0.982, which indicates the model is a great predictor and is even higher than the previous model.</p>
+</div>
+<div id="perform-10-fold-or-repeated-random-sub-sampling-cv-with-the-same-model-and-report-average-out-of-sample-classification-diagnostics-accuracy-sensitivity-specificity-precision-and-auc-interpret-auc-and-compare-with-the-in-sample-metrics-10" class="section level4">
+<h4>Perform 10-fold (or repeated random sub-sampling) CV with the same model and report average out-of-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, and AUC); interpret AUC and compare with the in-sample metrics (10)</h4>
+<pre class="r"><code>set.seed(1234)
+k=10
+
+#randomly order rows
+data1 &lt;- datapt2[sample(nrow(datapt2)),]
+#create 10 folds
+folds &lt;- cut(seq(1:nrow(datapt2)),breaks=k,labels=F)
+
+diags&lt;-NULL
+for(i in 1:k){
+  ## create training and test sets
+  train&lt;-data1[folds!=i,] 
+  test&lt;-data1[folds==i,]
+  truth1&lt;-test$Carbon_Intensive
+  
+  ## train model on training set
+  fit &lt;- glm(Carbon_Intensive ~ ., data = datapt2, family = &quot;binomial&quot;)
+  probs &lt;- predict(fit, newdata = test, type=&quot;response&quot;)
+  
+  ## test model on test set (save all k results)
+  diags &lt;- rbind(diags, class_diag(probs,truth1))
+}
+
+
+summarize_all(diags,mean)</code></pre>
+<pre><code>##        acc      sens      spec       ppv       auc
+## 1 0.919281 0.9166667 0.9053932 0.9136364 0.9831045</code></pre>
+<p>My model has an accuracy of 91.9%, a sensitivity of 91.67%, a specificity of 90.5%, and a precision of 91.4%. The AUC is 0.983. These values are extremely close to the previous in-sample metrics, but the AUC slightly increased from 0.982.</p>
+</div>
+<div id="perform-lasso-on-the-same-modelvariables.-choose-lambda-to-give-the-simplest-model-whose-accuracy-is-near-that-of-the-best-i.e.-lambda.1se.-discuss-which-variables-are-retained.-5" class="section level4">
+<h4>Perform LASSO on the same model/variables. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., <code>lambda.1se</code>). Discuss which variables are retained. (5)</h4>
+<pre class="r"><code>#import libraries
+library(glmnet)
+
+#response and predictors (dropping intercept)
+y&lt;-as.matrix(datapt2$Carbon_Intensive) #grab response
+x&lt;-model.matrix(Carbon_Intensive ~ ., data = datapt2)[,-1]
+x&lt;-scale(x)
+head(x)</code></pre>
+<pre><code>## GDP GDP_per_capita_c Income_Levellower-middle
+Income_Levelupper-middle Income_Levelhigh
+## 1 -0.2612403 -0.6152806 -0.6989556 -0.6446832 -0.5468212
+## 2 -0.2627700 -0.4130907 1.4224360 -0.6446832 -0.5468212
+## 3 -0.2350152 -0.3996033 -0.6989556 1.5421833 -0.5468212
+## 4 -0.2439535 -0.4002572 -0.6989556 1.5421833 -0.5468212
+## 5 -0.1580361 0.1762972 -0.6989556 -0.6446832 1.8181805
+## 6 -0.2629196 -0.4337933 1.4224360 -0.6446832 -0.5468212
+## Population_c Death_rate Adolescent_fertility_rate
+Age_dependency_ratio Forest_area
+## 1 -0.2267509 -0.4087636 0.6755480 1.7088171 -1.3248649
+## 2 -0.2690423 -0.2391469 -0.7976209 -0.9180671 -0.1731595
+## 3 -0.2196233 -1.2661411 -1.0226566 -0.4869516 -1.3798951
+## 4 -0.2355078 0.4133740 2.4826483 2.1593227 0.6325048
+## 5 -0.2150580 -0.1342014 0.2309133 -0.2937487 -0.9788102
+## 6 -0.2689821 0.7119459 -0.7317852 -0.9602018 -0.9013560
+## Renewable_energy_consumption Drinking_services
+## 1 -0.5984133 -1.4496173
+## 2 0.1278217 0.3272156
+## 3 -1.2589291 0.4764351
+## 4 0.5217678 -1.8857709
+## 5 -0.8999387 0.8139887
+## 6 -0.6930594 0.8540617</code></pre>
+<pre class="r"><code>glm(y~x,family=binomial)</code></pre>
+<pre><code>##
+## Call: glm(formula = y ~ x, family = binomial)
+##
+## Coefficients:
+## (Intercept) xGDP xGDP_per_capita_c
+## 0.79933 18.28468 2.31878
+## xIncome_Levellower-middle xIncome_Levelupper-middle
+xIncome_Levelhigh
+## 5.95350 6.74591 6.03750
+## xPopulation_c xDeath_rate xAdolescent_fertility_rate
+## -5.73801 0.78497 0.07112
+## xAge_dependency_ratio xForest_area
+xRenewable_energy_consumption
+## -0.57928 0.09270 -1.91192
+## xDrinking_services
+## 0.74771
+##
+## Degrees of Freedom: 172 Total (i.e. Null); 160 Residual
+## Null Deviance: 239.8
+## Residual Deviance: 59.2 AIC: 85.2</code></pre>
+<pre class="r"><code>#pick an optimal value for lambda through 10-fold CV
+cv &lt;- cv.glmnet(x,y, family=&quot;binomial&quot;)
+
+#make a plot of the coefficients for different values of lambda
+{plot(cv$glmnet.fit, &quot;lambda&quot;, label=TRUE); abline(v = log(cv$lambda.1se)); abline(v = log(cv$lambda.min),lty=2)}</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-19-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>cv&lt;-cv.glmnet(x,y,family=&quot;binomial&quot;)
+lasso&lt;-glmnet(x,y,family=&quot;binomial&quot;,lambda=cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 13 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                                      s0
+## (Intercept)                  -0.1729104
+## GDP                           .        
+## GDP_per_capita_c              0.4173757
+## Income_Levellower-middle     -0.9173488
+## Income_Levelupper-middle      .        
+## Income_Levelhigh              0.1207245
+## Population_c                  .        
+## Death_rate                    0.1350383
+## Adolescent_fertility_rate     .        
+## Age_dependency_ratio         -0.6723135
+## Forest_area                   .        
+## Renewable_energy_consumption -0.8581484
+## Drinking_services             0.3294858</code></pre>
+<p>Of the previous model, GDP per capita (centered), lower-middle and high income level (compared to low income level), death rate, age dependency ratio, renewable energy consumption, and drinking services were retained.</p>
+</div>
+<div id="perform-10-fold-cv-using-only-the-variables-lasso-selected-compare-models-out-of-sample-auc-to-that-of-your-logistic-regressions-above-5" class="section level4">
+<h4>Perform 10-fold CV using only the variables lasso selected: compare model's out-of-sample AUC to that of your logistic regressions above (5)</h4>
+<pre class="r"><code>#cross-validating lasso model
+set.seed(1234)
+k=10
+
+data &lt;- datapt2 %&gt;% sample_frac
+folds &lt;- ntile(1:nrow(data),n=10)
+
+diags&lt;-NULL
+for(i in 1:k){
+  train &lt;- data[folds!=i,]
+  test &lt;- data[folds==i,]
+  truth &lt;- test$Carbon_Intensive
+  
+  fit &lt;- glm(Carbon_Intensive~ GDP_per_capita_c + Income_Level + Death_rate + Age_dependency_ratio + Renewable_energy_consumption + Drinking_services, 
+             data=datapt2, family=&quot;binomial&quot;)
+  probs &lt;- predict(fit, newdata=test, type=&quot;response&quot;)
+  
+  diags&lt;-rbind(diags,class_diag(predict(fit, type=&quot;response&quot;), datapt2$Carbon_Intensive))
+}
+
+diags%&gt;%summarize_all(mean)</code></pre>
+<pre><code>##         acc      sens      spec ppv       auc
+## 1 0.9190751 0.9418605 0.8965517 0.9 0.9782144</code></pre>
+<p>The AUC is 0.978, which is the best CV performance yet for predicting whether a country is carbon-intensive.</p>
+</div>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Chung-Wing Ko" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Project 1: Exploratory Data Analysis</title>
+    <meta name="generator" content="Hugo 0.79.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project1/">Project 1: Exploratory Data Analysis</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         December 9, 2020 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+<script src="../../rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="../../rmarkdown-libs/plotly-binding/plotly.js"></script>
+<script src="../../rmarkdown-libs/typedarray/typedarray.min.js"></script>
+<script src="../../rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="../../rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="../../rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+<link href="../../rmarkdown-libs/plotly-htmlwidgets-css/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="../../rmarkdown-libs/plotly-main/plotly-latest.min.js"></script>
+
+
+<p>I found three datasets through the World Bank Databank, found here: <a href="https://databank.worldbank.org/home.aspx" class="uri">https://databank.worldbank.org/home.aspx</a>. Datasets can be filtered based on countries, statistics, and years. I chose statistics from Gender Statistics, Poverty Statistics, and Sustainable Development Goals, using the year 2015 as the base year for all three datasets. The Gender Statistics dataset contained these variables: GDP, Death rate, Adolescent fertility rate, and Age dependency ratio. The Poverty Statistics dataset contains the Population statistic, and the Sustainability Development Goals dataset contains CO2 emissions per capita, Forest area, Renewable resource consumption, and Access to drinking water services. I'm particularly interested in how a country's income level (based on GDP) impacts societal issues such as access to drinking water and adolescent fertility rate, as well as sustainability variables such as CO2 emissions and forest cover. I expect higher GDP to correlate to a higher standard of living (lower death rate, lower adolescent fertility rate, lower age dependency ratio, more access to drinking water services) and worse sustainability initiatives (such as higher CO2, less forest cover, but higher renewable resource consumption).</p>
+<div id="joining-datasets" class="section level3">
+<h3>Joining datasets</h3>
+<div id="you-will-document-the-type-of-join-that-you-do-leftrightinnerfull-including-a-discussion-of-how-many-observations-were-in-each-dataset-which-observations-in-each-dataset-were-dropped-if-any-and-why-you-chose-this-particular-join." class="section level5">
+<h5>You will document the type of join that you do (left/right/inner/full), including a discussion of how many observations were in each dataset, which observations in each dataset were dropped (if any) and why you chose this particular join.</h5>
+<pre class="r"><code>#loading libraries and importing datasets
+country &lt;- read.csv(&quot;Country Data.csv&quot;)
+sustainability &lt;- read.csv(&quot;Sustainability Stats.csv&quot;)
+population &lt;- read.csv(&quot;Population.csv&quot;)
+library(dplyr)
+
+#joining datasets
+data &lt;- inner_join(country, sustainability, by = &quot;Country.Name&quot;)
+data &lt;- inner_join(data, population, by = &quot;Country.Name&quot;)
+
+#removing and renaming columns
+colnames(data)</code></pre>
+<pre><code>## [1] &quot;Time.x&quot;
+## [2] &quot;Time.Code.x&quot;
+## [3] &quot;Country.Name&quot;
+## [4] &quot;Country.Code.x&quot;
+## [5] &quot;GDP..current.US....NY.GDP.MKTP.CD.&quot;
+## [6]
+&quot;Death.rate..crude..per.1.000.people...SP.DYN.CDRT.IN.&quot;
+## [7]
+&quot;Adolescent.fertility.rate..births.per.1.000.women.ages.15.19...SP.ADO.TFRT.&quot;
+## [8]
+&quot;Age.dependency.ratio....of.working.age.population...SP.POP.DPND.&quot;
+## [9] &quot;Time.y&quot;
+## [10] &quot;Time.Code.y&quot;
+## [11] &quot;Country.Code.y&quot;
+## [12]
+&quot;CO2.emissions..metric.tons.per.capita...EN.ATM.CO2E.PC.&quot;
+## [13] &quot;Forest.area....of.land.area...AG.LND.FRST.ZS.&quot;
+## [14]
+&quot;Renewable.energy.consumption....of.total.final.energy.consumption...EG.FEC.RNEW.ZS.&quot;
+## [15]
+&quot;People.using.at.least.basic.drinking.water.services....of.population...SH.H2O.BASW.ZS.&quot;
+## [16] &quot;Year&quot;
+## [17] &quot;Year.Code&quot;
+## [18] &quot;Country.Code&quot;
+## [19] &quot;Population..total..SP.POP.TOTL.&quot;</code></pre>
+<pre class="r"><code>data &lt;- data %&gt;% select(-Time.x, -Time.Code.x, -Time.y, -Time.Code.y, -Country.Code.x, -Country.Code.y, -Year, -Year.Code, -Country.Code)
+data &lt;- data %&gt;% rename(Country_Name = Country.Name, GDP = GDP..current.US....NY.GDP.MKTP.CD., Death_rate = Death.rate..crude..per.1.000.people...SP.DYN.CDRT.IN., Age_dependency_ratio = Age.dependency.ratio....of.working.age.population...SP.POP.DPND., Adolescent_fertility_rate = Adolescent.fertility.rate..births.per.1.000.women.ages.15.19...SP.ADO.TFRT., CO2_emissions_per_capita = CO2.emissions..metric.tons.per.capita...EN.ATM.CO2E.PC., Forest_area = Forest.area....of.land.area...AG.LND.FRST.ZS., Drinking_services = People.using.at.least.basic.drinking.water.services....of.population...SH.H2O.BASW.ZS., Renewable_energy_consumption = Renewable.energy.consumption....of.total.final.energy.consumption...EG.FEC.RNEW.ZS., Population = Population..total..SP.POP.TOTL.)
+glimpse(data)</code></pre>
+<pre><code>## Rows: 309
+## Columns: 10
+## $ Country_Name &lt;fct&gt; &quot;Afghanistan&quot;, &quot;Albania&quot;,
+&quot;Algeria&quot;, &quot;Angola&quot;, &quot;Argentina&quot;, …
+## $ GDP &lt;dbl&gt; 1.990711e+10, 1.138685e+10, 1.659794e+11,
+1.161936e+11, 5.94…
+## $ Death_rate &lt;dbl&gt; 6.929, 7.367, 4.715, 9.052, 7.638,
+9.823, 6.600, 9.600, 5.70…
+## $ Adolescent_fertility_rate &lt;dbl&gt; 81.6930, 20.0772,
+10.6650, 157.2756, 63.0960, 22.8308, 11.94…
+## $ Age_dependency_ratio &lt;dbl&gt; 89.95409, 45.55040,
+52.83779, 97.56924, 56.10360, 44.83818, …
+## $ CO2_emissions_per_capita &lt;dbl&gt; 0.26255571, 1.60264803,
+3.85455658, 1.24024546, 4.66401075, …
+## $ Forest_area &lt;dbl&gt; 2.0678246, 28.1569343, 0.8212483,
+46.4073153, 9.9068583, 11.…
+## $ Renewable_energy_consumption &lt;dbl&gt; 18.42347717,
+38.61521047, 0.05895868, 49.56821033, 10.040077…
+## $ Drinking_services &lt;dbl&gt; 61.54693, 91.00102, 93.47460,
+54.31693, 99.07013, 99.73441, …
+## $ Population &lt;dbl&gt; 34413603, 2880703, 39728025,
+27884381, 43131966, 2925553, 23…</code></pre>
+<pre class="r"><code>#omitting NA values
+data &lt;- data %&gt;% na.omit()</code></pre>
+<p>I joined the datasets with an inner join, because I wanted data that appeared in all datasets, dropping all unmatched rows. In reality, regardless of what join I chose, the resulting dataset would have been the same, because all three datasets encompassed exactly 263 rows containing all the countries in the world based on the World Bank datasets. I dropped all rows related to time and year, because all data was drawn from the year 2015 and a column would be redundant. I also dropped country code, because that was redundant with country name. To clean up the resulting dataset, I dropped all rows that contained any &quot;NA&quot; values.</p>
+</div>
+</div>
+<div id="create-summary-statistics" class="section level3">
+<h3>Create summary statistics</h3>
+<div id="use-all-six-core-dplyr-functions-filter-select-arrange-group_by-mutate-summarize-to-manipulate-and-explore-your-dataset.-for-mutate-create-a-new-variable-that-is-a-function-of-at-least-one-other-variable-preferably-using-a-dplyr-vector-function-see-dplyr-cheatsheet.-its-totally-fine-to-use-the-_if-_at-_all-versions-of-mutatesummarize-instead-indeed-it-is-encouraged-if-you-have-lots-of-variables" class="section level5">
+<h5>Use <em>all six</em> core <code>dplyr</code> functions (<code>filter, select, arrange, group_by, mutate, summarize</code>) to manipulate and explore your dataset. For mutate, create a new variable that is a function of at least one other variable, preferably using a dplyr vector function (see dplyr cheatsheet). It's totally fine to use the <code>_if</code>, <code>_at</code>, <code>_all</code> versions of mutate/summarize instead (indeed, it is encouraged if you have lots of variables)</h5>
+<pre class="r"><code>#making new numeric variable
+data &lt;- data %&gt;% mutate(GDP_per_capita = GDP/Population)
+
+#making new categorical variable based on World Bank classifications
+data &lt;- data %&gt;% mutate(Income_Level = case_when(GDP_per_capita &gt; 12535 ~ &quot;high&quot;, GDP_per_capita &lt;= 12535 &amp; 4045 &lt;= GDP_per_capita ~ &quot;upper-middle&quot;, GDP_per_capita &lt;= 4045 &amp; 1035 &lt;= GDP_per_capita ~ &quot;lower-middle&quot;, GDP_per_capita &lt;= 1035 ~ &quot;low&quot;))
+
+#reordering variables in dataset
+data &lt;- data %&gt;% select(Country_Name, GDP, GDP_per_capita, Income_Level, Population, everything())
+
+#examining variable using &quot;filter&quot;, &quot;select&quot;, &quot;arrange&quot;
+data %&gt;% filter(Income_Level == &quot;high&quot;) %&gt;% select(Country_Name, CO2_emissions_per_capita) %&gt;% arrange(desc(CO2_emissions_per_capita))</code></pre>
+<pre><code>##             Country_Name CO2_emissions_per_capita
+## 1    Trinidad and Tobago                33.755085
+## 2             Luxembourg                16.242584
+## 3          United States                15.989866
+## 4                 Canada                15.388950
+## 5              Australia                15.339784
+## 6                Estonia                12.438853
+## 7            Korea, Rep.                11.709398
+## 8            High income                10.649120
+## 9            Netherlands                10.182574
+## 10        Czech Republic                 9.468220
+## 11                 Japan                 9.153641
+## 12                Norway                 9.099287
+## 13               Germany                 8.900419
+## 14               Belgium                 8.811836
+## 15                Israel                 7.900584
+## 16               Finland                 7.775642
+## 17               Ireland                 7.636664
+## 18                Poland                 7.520039
+## 19               Austria                 7.088592
+## 20 Europe &amp; Central Asia                 6.865378
+## 21        United Kingdom                 6.220240
+## 22              Slovenia                 6.072184
+## 23                Greece                 6.012440
+## 24               Iceland                 6.007932
+## 25       Slovak Republic                 5.767759
+## 26               Denmark                 5.422286
+## 27                 Spain                 5.393419
+## 28                Cyprus                 5.287371
+## 29            Seychelles                 5.259936
+## 30              Portugal                 4.755595
+## 31             Argentina                 4.664011
+## 32                 Chile                 4.632586
+## 33               Hungary                 4.512673
+## 34             Lithuania                 4.504049
+## 35           Switzerland                 4.307036
+## 36                Sweden                 3.896324
+## 37                 Malta                 3.641845
+## 38                Latvia                 3.543637
+## 39                Panama                 2.804430
+## 40               Uruguay                 1.963538</code></pre>
+<p>I created a new variable for GDP per capita, which was calculated by dividing GDP by total population of each country. This variable is necessary to classify country based on income level (high, upper-middle, lower-middle, low). The cutoffs for each income level are based off of the World Bank classifications, which is the same source that the data was taken from. I reordered the columns in the dataset to increase clarity. I then filtered out high-income countries and sorted them by highest CO2 emitters per capita.</p>
+</div>
+<div id="create-summary-statistics-mean-sd-var-n-quantile-min-max-n_distinct-cor-etc-for-each-of-your-numeric-variables-both-overall-and-after-grouping-by-one-of-your-categorical-variables-either-together-or-one-at-a-time-if-you-have-two-categorical-variables-try-to-include-at-least-one-statistic-based-on-a-grouping-of-two-categorical-variables-simultaneously.-if-you-do-not-have-any-categorical-variables-create-one-using-mutate-e.g.-with-case_when-or-ifelse-to-satisfy-the-group_by-requirements-above.-ideally-you-will-find-a-way-to-show-these-summary-statistics-in-an-easy-to-read-table-e.g.-by-reshaping.-you-might-explore-the-kable-package-for-making-pretty-tables-if-you-have-lots-of-numeric-variables-e.g.-10-or-your-categorical-variables-have-too-many-categories-just-pick-a-few-either-numeric-variables-or-categories-of-a-categorical-variable-and-summarize-based-on-those.-it-would-be-a-good-idea-to-show-a-correlation-matrix-for-your-numeric-variables-you-will-need-it-to-make-one-of-your-plots." class="section level5">
+<h5>Create summary statistics (<code>mean, sd, var, n, quantile, min, max, n_distinct, cor</code>, etc) for each of your numeric variables both overall and after grouping by one of your categorical variables (either together or one-at-a-time; if you have two categorical variables, try to include at least one statistic based on a grouping of two categorical variables simultaneously). If you do not have any categorical variables, create one using mutate (e.g., with <code>case_when</code> or <code>ifelse</code>) to satisfy the <code>group_by</code> requirements above. Ideally, you will find a way to show these summary statistics in an easy-to-read table (e.g., by reshaping). (You might explore the kable package for making pretty tables!) If you have lots of numeric variables (e.g., 10+), or your categorical variables have too many categories, just pick a few (either numeric variables or categories of a categorical variable) and summarize based on those. It would be a good idea to show a correlation matrix for your numeric variables (you will need it to make one of your plots).</h5>
+<pre class="r"><code>#loading libraries
+library(tidyr)
+
+#reorder income level
+data$Income_Level &lt;- factor(data$Income_Level, levels = c(&quot;low&quot;, &quot;lower-middle&quot;, &quot;upper-middle&quot;, &quot;high&quot;))
+
+#summary statistics for CO2 emissions, pivot longer 
+data %&gt;% summarize(mean(CO2_emissions_per_capita), sd(CO2_emissions_per_capita), min(CO2_emissions_per_capita), max(CO2_emissions_per_capita), median(CO2_emissions_per_capita)) %&gt;% pivot_longer(cols = c(1:5), names_to = &quot;stat&quot;, values_to = &quot;value&quot;)</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##   stat                               value
+##   &lt;chr&gt;                              &lt;dbl&gt;
+## 1 mean(CO2_emissions_per_capita)    3.60  
+## 2 sd(CO2_emissions_per_capita)      4.27  
+## 3 min(CO2_emissions_per_capita)     0.0372
+## 4 max(CO2_emissions_per_capita)    33.8   
+## 5 median(CO2_emissions_per_capita)  2.29</code></pre>
+<pre class="r"><code>#CO2 emissions summary stats by income level
+data %&gt;% group_by(Income_Level) %&gt;% summarize(mean(CO2_emissions_per_capita), sd(CO2_emissions_per_capita))</code></pre>
+<pre><code>## # A tibble: 4 x 3
+## Income_Level `mean(CO2_emissions_per_capita)`
+`sd(CO2_emissions_per_capita)`
+## &lt;fct&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 low 0.193 0.121
+## 2 lower-middle 1.26 1.19
+## 3 upper-middle 4.30 2.86
+## 4 high 8.16 5.53</code></pre>
+<pre class="r"><code>#summary statistics for adolescent fertility rate, pivot longer
+data %&gt;% summarize(mean(Adolescent_fertility_rate), sd(Adolescent_fertility_rate), min(Adolescent_fertility_rate), max(Adolescent_fertility_rate), median(Adolescent_fertility_rate)) %&gt;% pivot_longer(cols = c(1:5), names_to = &quot;stat&quot;, values_to = &quot;value&quot;)</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##   stat                               value
+##   &lt;chr&gt;                              &lt;dbl&gt;
+## 1 mean(Adolescent_fertility_rate)    53.4 
+## 2 sd(Adolescent_fertility_rate)      41.8 
+## 3 min(Adolescent_fertility_rate)      1.53
+## 4 max(Adolescent_fertility_rate)    192.  
+## 5 median(Adolescent_fertility_rate)  47.6</code></pre>
+<pre class="r"><code>#adolescent fertility rate summary stats by income level
+data %&gt;% group_by(Income_Level) %&gt;% summarize(mean(Adolescent_fertility_rate), sd(Adolescent_fertility_rate))</code></pre>
+<pre><code>## # A tibble: 4 x 3
+## Income_Level `mean(Adolescent_fertility_rate)`
+`sd(Adolescent_fertility_rate)`
+## &lt;fct&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 low 110.  40.1
+## 2 lower-middle 59.9 31.4
+## 3 upper-middle 47.0 33.3
+## 4 high 17.1 19.2</code></pre>
+<pre class="r"><code>#correlation matrix
+correlations &lt;- data %&gt;% select_if(is.numeric) %&gt;% cor(use = &quot;pair&quot;)</code></pre>
+<p>I further investigated the variables &quot;CO2 emissions per capita&quot; and &quot;Adolescent fertility rate&quot; through summary statistics, including mean, standard deviation, minimum, maximum, and median. I looked at the summary statistics both overall and after grouping by income level. I then made a correlation matrix for my numeric variables.</p>
+</div>
+</div>
+<div id="make-visualizations-three-plots" class="section level3">
+<h3>Make visualizations (three plots)</h3>
+<div id="make-a-correlation-heatmap-of-your-numeric-variables" class="section level5">
+<h5>Make a correlation heatmap of your numeric variables</h5>
+<pre class="r"><code>#loading libraries
+library(tidyverse)
+
+#correlation heatmap of numeric variables
+heatmap &lt;- correlations %&gt;% as.data.frame %&gt;% rownames_to_column %&gt;% pivot_longer(-1) %&gt;% ggplot(aes(rowname, name, fill=value)) + geom_tile() + geom_text(aes(label=round(value,2)), size = 2.5) + xlab(&quot;&quot;) + ylab(&quot;&quot;) + coord_fixed() + scale_fill_gradient2(low=&quot;red&quot;, mid=&quot;white&quot;, high=&quot;blue&quot;)
+#tilt x axis labels
+heatmap + theme(axis.text.x = element_text(angle = 60, hjust = 1)) </code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /> I made a correlation heatmap of my numeric variables, with a darker blue indicating a strong positive correlation and a darker red indicating a strong negative association. The strongest positive correlation is age dependency ratio and adolescent fertility rate, with a correlation of 0.79. The strongest negative correlation is age dependency ratio and drinking services, with a correlation of 0.81.</p>
+</div>
+<div id="create-at-least-two-additional-plots-of-your-choice-with-ggplot-that-highlight-some-of-the-more-interesting-features-of-your-data." class="section level5">
+<h5>Create at least two additional plots of your choice with ggplot that highlight some of the more interesting features of your data.</h5>
+</div>
+<div id="each-plot-besides-the-heatmap-should-have-at-least-three-variables-mapped-to-separate-aesthetics.-each-should-use-different-geoms-dont-do-two-geom_bars.-at-least-one-plot-should-include-statsummary.-each-plot-should-include-a-supporting-paragraph-describing-the-relationships-that-are-being-visualized-and-any-trends-that-are-apparent.-it-is-fine-to-include-more-but-limit-yourself-to-4.-plots-should-avoid-being-redundant-four-bad-plots-will-get-a-lower-grade-than-two-good-plots-all-else-being-equal.-make-them-pretty-use-correct-labels-etc." class="section level5">
+<h5>Each plot (besides the heatmap) should have at least three variables mapped to separate aesthetics. Each should use different geoms (don't do two geom_bars). At least one plot should include <code>stat=&quot;summary&quot;</code>. Each plot should include a supporting paragraph describing the relationships that are being visualized and any trends that are apparent. It is fine to include more, but limit yourself to 4. Plots should avoid being redundant! Four bad plots will get a lower grade than two good plots, all else being equal. Make them pretty! Use correct labels, etc.</h5>
+<pre class="r"><code>#scatterplot of renewable energy consumption and CO2 emissions by capita, grouped by income level
+sustainabilityplot &lt;- data %&gt;% group_by(Income_Level) %&gt;% ggplot(aes(Renewable_energy_consumption, CO2_emissions_per_capita)) + geom_point(aes(color = Income_Level)) + scale_x_continuous(breaks = seq(from = 0, to = 100, by = 10)) + scale_y_continuous(breaks = seq(from = 0, to = 35, by = 5)) + ggtitle(&quot;Sustainability of Countries Based on Income Level&quot;) + xlab(&quot;Renewable Energy Consumption (% of total energy consumption)&quot;) + ylab(&quot;CO2 emissions per capita&quot;) + labs(color = &quot;Income Level&quot;) + theme_classic()
+
+#label specific points
+sustainabilityplot + geom_text(aes(label=ifelse(CO2_emissions_per_capita &gt; 30,as.character(Country_Name),&#39;&#39;)),hjust=-0.1,vjust=.4)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /> There is a general correlation between higher renewable energy consumption (as a percentage of total energy consumption) and lower CO2 emissions per capita, which is to be expected. Income level also affects the CO2 emissions and renewable energy consumption of each country, with high and upper-middle income levels generally emitting more CO2 per capita and consuming less renewable energy as a percentage of their total energy consumption. Lower-middle and low income countries have a wide range of renewable energy consumption, but overall emit less CO2 per capita. I expected high income countries to consume more renewable energy as a total % of energy consumption, but found this to not be the case. I was curious which country was emitting the most CO2 per capita, because it looked like an outlier compared to the other countries, and found it to be Trinidad and Tobago.</p>
+<pre class="r"><code>#organize data and rename variables
+summaryplot &lt;- data %&gt;% group_by(Income_Level, Country_Name) %&gt;% summarize(Mean_adolescent_fertility = mean(Adolescent_fertility_rate), sd_adolescent_fertility = sd(Adolescent_fertility_rate), n = n(), se_adolescent_fertility = sd_adolescent_fertility/sqrt(n), Country = Country_Name)
+
+#plot mean adolescent fertility rate by country and facet by income level
+afr &lt;- summaryplot %&gt;% ggplot(aes(Country, Mean_adolescent_fertility)) + geom_bar(stat = &quot;summary&quot;) + geom_errorbar(stat = &quot;summary&quot;) + facet_wrap(~Income_Level) 
+
+#take out country names and add title/labels
+afr2 &lt;- afr + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + ggtitle(&quot;Adolescent Fertility Rate by Country Income Level&quot;) + ylab(&quot;Mean Adolescent Fertility Rate (births per 1000 women ages 15-19)&quot;) + xlab(&quot;Country&quot;)
+
+#color by income level and change legend title
+afr2 + aes(fill = Income_Level) + scale_fill_discrete(name = &quot;Income Level&quot;)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /> Based on these graphs, there is a notable difference in mean adolescent fertility rates across country income levels. Specifically, comparing high income countries and low income countries, high income countries have a general trend of lower mean adolescent fertility rates (as measured by the number of births per 1000 women aged 15-19) as compared to low income countries. The middle income countries (both lower-middle and upper-middle) do not have as clear differences in mean adolescent fertility rates, but generally falls in between the high income and low income countries. Due to the number of countries, error bars are not visible, so this is a potential source of error.</p>
+</div>
+</div>
+<div id="perform-k-meanspam-clustering-or-pca-on-at-least-your-numeric-variables." class="section level3">
+<h3>Perform k-means/PAM clustering or PCA on (at least) your numeric variables.</h3>
+<div id="include-all-steps-as-we-discuss-in-class-including-a-visualization." class="section level5">
+<h5>Include all steps as we discuss in class, including a visualization.</h5>
+</div>
+<div id="if-you-dont-have-at-least-3-numeric-variables-or-you-want-to-cluster-based-on-categorical-variables-too-convert-them-to-factors-in-r-generate-gowers-dissimilarity-matrix-on-the-data-and-do-pam-clustering-on-the-dissimilarities." class="section level5">
+<h5>If you don't have at least 3 numeric variables, or you want to cluster based on categorical variables too, convert them to factors in R, generate Gower's dissimilarity matrix on the data, and do PAM clustering on the dissimilarities.</h5>
+<div id="show-how-you-chose-the-final-number-of-clustersprincipal-components" class="section level6">
+<h6>Show how you chose the final number of clusters/principal components</h6>
+</div>
+<div id="interpret-the-final-clustersprincipal-components" class="section level6">
+<h6>Interpret the final clusters/principal components</h6>
+</div>
+<div id="for-every-step-document-what-your-code-does-in-words-and-what-you-see-in-the-data" class="section level6">
+<h6>For every step, document what your code does (in words) and what you see in the data!</h6>
+<pre class="r"><code>#load libraries
+library(cluster)
+library(GGally)
+library(plotly)
+
+#process data and incorporate categorical variables
+pamtest &lt;- data %&gt;% mutate_if(is.character,as.factor) %&gt;% column_to_rownames(&quot;Country_Name&quot;) %&gt;%
+  select(Income_Level, Adolescent_fertility_rate, Age_dependency_ratio, CO2_emissions_per_capita) %&gt;% mutate_at(2:4, as.numeric)
+glimpse(pamtest)</code></pre>
+<pre><code>## Rows: 173
+## Columns: 4
+## $ Income_Level &lt;fct&gt; low, lower-middle, upper-middle,
+upper-middle, high, lower-midd…
+## $ Adolescent_fertility_rate &lt;dbl&gt; 81.6930, 20.0772,
+10.6650, 157.2756, 63.0960, 22.8308, 11.9498,…
+## $ Age_dependency_ratio &lt;dbl&gt; 89.95409, 45.55040,
+52.83779, 97.56924, 56.10360, 44.83818, 50.…
+## $ CO2_emissions_per_capita &lt;dbl&gt; 0.26255571, 1.60264803,
+3.85455658, 1.24024546, 4.66401075, 1.6…</code></pre>
+<pre class="r"><code>#calculate gower dissimilarities
+pamtest$Income_Level &lt;- as.factor(pamtest$Income_Level)
+gower &lt;- daisy(pamtest, metric = &quot;gower&quot;)
+
+#for loop to determine ideal number of clusters
+sil_width &lt;- vector()
+for(i in 2:10){  
+  pam_fit &lt;- pam(gower, diss = TRUE, k = i)  
+  sil_width[i] &lt;- pam_fit$silinfo$avg.width
+}
+ggplot()+geom_line(aes(x = 1:10, y=sil_width)) + scale_x_continuous(name=&quot;k&quot;, breaks = 1:10)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-8-1.png" width="768" style="display: block; margin: auto;" /> I created a new dataset containing just four variables that I'm interested in analyzing further. Using gower dissimilarities, I ran a for loop with the silhouette method to determine the appropriate number of clusters to group my data. Based on the average silhouette widths as shown in the graph, the appropriate number of clusters is four.</p>
+<pre class="r"><code># using gower dissimilarities and k = 4, perform clustering with PAM
+test &lt;- pam(gower, k = 4, diss = T)
+
+#interpret average silhouette width
+plot(test, which = 2)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /> Data was clustered into four groups, also shown in the silhouette plot. The average silhouette width was 0.71, showing that a strong structure has been found.</p>
+<pre class="r"><code>#2D graph of three variables and clusters
+cluster &lt;- pamtest %&gt;% mutate(cluster = as.factor(test$clustering))
+cluster %&gt;% ggplot(aes(Adolescent_fertility_rate, Age_dependency_ratio, color=Income_Level, shape = cluster)) + geom_point() + ggtitle(&quot;Adolescent fertility rate and age dependency ratio by income level&quot;) + xlab(&quot;Adolescent fertility rate&quot;) + ylab(&quot;Age dependency ratio&quot;) + labs(color = &quot;Income Level&quot;)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /> There appears to be a general correlation between higher adolescent fertility rate (measured by the number of births per 1000 women aged 15-19) and higher age dependency ratio (the ratio of dependents vs. the working aged population, with working age being defined ages 15-65 and dependents being outside that age range). Both these values increase for as income level decreases (i.e. high income countries have lower adolescent fertility rates and age dependency ratios than low income countries), and clusters appear to overlap exactly with country income level groups.</p>
+<pre class="r"><code>#3D graph of four variables and clusters
+cluster %&gt;% plot_ly(x = ~Adolescent_fertility_rate,  y = ~Age_dependency_ratio, z = ~CO2_emissions_per_capita, color = ~cluster, colors = c(&quot;light green&quot;, &quot;light blue&quot;, &quot;thistle&quot;, &quot;aquamarine&quot;), symbol = ~Income_Level, symbols = c(&#39;circle&#39;,&#39;x&#39;,&#39;o&#39;, &#39;square&#39;), type = &quot;scatter3d&quot;, mode = &quot;markers&quot;) %&gt;%
+  layout(
+    title = &quot;Adolescent fertility rate, Age dependency ratio, and CO2 emissions by Income Level&quot;,
+    scene = list(
+      xaxis = list(title = &quot;Adolescent fertility rate (# births per 1000 women aged 15-19)&quot;),
+      yaxis = list(title = &quot;Age dependency ratio (ratio of dependents to working-age pop)&quot;),
+      zaxis = list(title = &quot;CO2 emissions (metric tons per capita)&quot;)))</code></pre>
+<p><div id="htmlwidget-1" style="width:768px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"visdat":{"a0bf634bc2a9":["function () ","plotlyVisDat"]},"cur_data":"a0bf634bc2a9","attrs":{"a0bf634bc2a9":{"x":{},"y":{},"z":{},"mode":"markers","color":{},"symbol":{},"colors":["light green","light blue","thistle","aquamarine"],"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"symbols":["circle","x","o","square"],"type":"scatter3d"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Adolescent fertility rate, Age dependency ratio, and CO2 emissions by Income Level","scene":{"xaxis":{"title":"Adolescent fertility rate (# births per 1000 women aged 15-19)"},"yaxis":{"title":"Age dependency ratio (ratio of dependents to working-age pop)"},"zaxis":{"title":"CO2 emissions (metric tons per capita)"}},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[81.693,108.7606,57.63,132.8304,167.942,126.2696,71.2274,83.2682,139.5256,106.0138,54.032,137.194,98.8591418573802,113.7668,137.2998,173.0382,152.8336,69.5002,192.22,39.6864,118.3336,54.4168,120.295,90.1494,124.0568],"y":[89.9540923341871,92.2404614970802,90.8999251434,92.4402496274904,101.131862259708,97.4793051484169,83.9197236322995,89.2411971080262,91.9882470240959,82.9789340636191,63.9673645593955,82.7077182278753,86.5751552837826,80.1069430327836,91.2925372585311,101.934632282416,93.4988069291773,63.6499698657842,111.598763392691,76.3058046877605,81.4938805815668,63.356956956338,89.4658649691963,81.6156725264543,99.4827703984958],"z":[0.262555710891417,0.183849877287497,0.0397016544242488,0.0652902071366096,0.0709441409966356,0.0372257193904917,0.136045863945994,0.251397984524369,0.23640292132111,0.160425788135174,0.274282500129493,0.2771427229816,0.272805408439921,0.150407888260536,0.0687618492182554,0.181680620052621,0.239883237934824,0.231435418304721,0.101384119910429,0.0845059372045438,0.148788315085764,0.592079302316008,0.251220814599751,0.360032242920336,0.139771240905896],"mode":"markers","type":"scatter3d","name":"1<br />low","marker":{"color":"rgba(144,238,144,1)","symbol":"circle","line":{"color":"rgba(144,238,144,1)"}},"textfont":{"color":"rgba(144,238,144,1)"},"error_y":{"color":"rgba(144,238,144,1)"},"error_x":{"color":"rgba(144,238,144,1)"},"line":{"color":"rgba(144,238,144,1)"},"frame":null},{"x":[20.0772,22.8308,85.2192,90.2036,23.306,68.0956,75.7158,49.6326,111.8636,68.989,114.6758,120.3414,19.9894,54.595,71.0814,77.941,97.9333718497029,48.504,68.677,73.9864,75.7848,87.1192134534776,19.127,48.6144,79.508,18.1598,37.265,66.3124,91.2404,46.4095100575938,74.2362,15.7768,23.7558,29.2282,32.0676,29.0358,88.5716,111.218,39.8832,54.2226,55.404,96.9444,77.0754,78.003,30.6349804819207,21.2944,106.385944010197,35.8114,7.7406,25.4078,23.79,50.6798,32.9818,55.9764,63.28,126.7456,95.2182],"y":[45.5504024648604,44.838175789912,52.3958676972212,86.0977848350733,49.5259753199025,64.3685000434748,52.5579786197934,55.5726749850255,85.0001973208983,75.5470150702934,80.9094021500826,83.0206847717815,53.5462053301437,62.3790235830238,56.5634440807183,75.5926413074769,82.6039001966187,49.9593831389709,70.0550413966088,68.7450354499227,61.429606707229,77.2831172660148,51.6434417413448,48.8857564512334,77.1299853344741,62.7518009360466,55.8485253530851,59.8683140220144,61.8229773709497,58.8676407732469,77.3792521166881,56.8391640621624,34.8452138899804,48.6463414210949,51.7759331771917,49.2223379928886,56.3152125533631,88.2035952712874,67.3546151257291,66.7954491639321,58.4386788364515,85.9419141298774,87.0389717260326,78.4203862356227,54.4381299602059,51.8938967841446,86.2260572238177,78.1682788612619,45.8895814398376,44.7876797499421,47.9585213725323,74.8154357006996,42.2236126514381,75.1909109446035,76.9528232901823,93.2039950061814,83.1385878661296],"z":[1.60264803417777,1.64200409290141,0.518850858828864,0.57349144549824,1.46604229291802,1.84670253998949,0.94340467619387,0.555905458747502,0.340283662787024,0.21697555002161,0.665272611017701,0.471910596606591,0.686063241184561,2.42941973461636,1.0829757645858,0.890142059555597,0.97979772692964,2.63020082270414,0.594373807079951,1.01713109925287,1.09934558817397,0.546941086671196,1.78433376502382,1.98445241358829,0.355454019955915,0.561967006220139,1.75381204989172,1.34197729056881,1.13980381938795,1.49153486155826,0.715038994874578,1.31331098764865,1.74389263828571,7.76585750118645,1.76761495335612,0.423286250838684,0.85675918010554,0.640003153848121,0.945421161804379,0.922655105747261,1.14696532119663,0.570003810822737,0.729704490714691,0.31616366946435,1.51200962502556,0.959155698617072,0.835275250273107,0.41994329191124,2.70598282693418,4.34697596024417,3.2885827616945,0.486895585143658,2.03210755160208,0.704186232989828,0.497091070160344,0.285427858211675,0.891623872056209],"mode":"markers","type":"scatter3d","name":"2<br />lower-middle","marker":{"color":"rgba(173,216,230,1)","symbol":"x","line":{"color":"rgba(173,216,230,1)"}},"textfont":{"color":"rgba(173,216,230,1)"},"error_y":{"color":"rgba(173,216,230,1)"},"error_x":{"color":"rgba(173,216,230,1)"},"line":{"color":"rgba(173,216,230,1)"},"frame":null},{"x":[10.665,157.2756,53.1988,17.2534,70.1638,10.608,46.8966,61.0878,41.4184,7.5318,69.3178,55.9828,9.6774,95.5912,20.7927291470796,80.6542,160.0836,47.973,100.2026,77.854,38.2094,74.837,55.9558,26.7598,30.374,65.1129054001644,15.2896,48.2856920475546,13.308,9.0044,26.7934,62.607,40.4988228269663,40.8901294777046,10.9198,69.769,16.6414,71.4732,59.0564,36.351,22.9874,25.632,16.3292,69.5352,41.9872,63.189,47.57,15.438,28.4326,25.2328,33.5797326859672],"y":[52.8377883037925,97.5692386262848,40.0764593805005,44.0639238558713,57.5287401471705,42.2922954488685,63.2737970129443,43.7481057517691,52.1897714267056,37.7138573515833,47.5456427995586,44.5771677535742,51.0274354031023,54.6507059523573,42.4911745841175,55.4273580765994,66.8427086768865,53.4224001045628,66.5541589240987,54.0242526903949,42.2235304863543,73.654100285337,49.4984778776438,65.9265255752007,50.2788108388345,50.3685982442069,50.7501881874148,54.5428967327429,45.0645499959841,33.6122582047381,41.5514542992188,52.3477199261289,54.4429880271538,51.0433070092257,47.6699310259709,68.4821277809802,41.5623044804652,57.0250176715609,54.8162626222134,48.1296512404566,43.7415513843021,76.4647413392181,49.5235419925573,52.2546505795966,40.8411501537155,52.705389476674,40.0094493552072,73.6166620727674,50.3050902399087,52.7155764873497,43.2806429275599],"z":[3.85455657561633,1.24024546214599,3.89640608617728,6.14141088532982,1.60524529483311,5.41491199089276,2.56084595957214,2.46678804837845,6.23257956160714,7.39852456644448,1.98039913875788,1.54991476553095,4.11834868365336,2.34749515643358,6.18777668016652,2.66904432637019,5.15891929267274,2.48230368155722,2.70174196456718,2.62805043313284,8.28207518414406,4.70236828634536,2.61926668813544,2.82744325708258,13.800054164653,3.00933105309963,3.74576720297556,3.44578967910072,7.75739069673438,2.86160051877823,3.33705553201516,3.96319112817122,6.21896743560105,3.79109789164742,3.60122894629829,1.72348226967511,3.41423382939103,0.942414766534714,1.72743190236244,3.61914153968264,11.7852203798736,1.21277640261895,6.18989263863558,8.37665534191835,2.29282181257886,3.08237785325042,4.13835221791799,1.20073228088628,4.46123115481488,12.6990918887022,6.07090467945643],"mode":"markers","type":"scatter3d","name":"3<br />upper-middle","marker":{"color":"rgba(216,191,216,1)","symbol":"circle-open","line":{"color":"rgba(216,191,216,1)"}},"textfont":{"color":"rgba(216,191,216,1)"},"error_y":{"color":"rgba(216,191,216,1)"},"error_x":{"color":"rgba(216,191,216,1)"},"line":{"color":"rgba(216,191,216,1)"},"frame":null},{"x":[63.096,11.9498,7.7896,5.2022,9.6298,46.152,4.8136,11.484,4.2482,11.0712,18.2086803071959,6.457,8.0822,7.7494,14.3689077863741,22.5134,7.5054,8.8202,10.3814,4.0596,1.5338,15.8182,11.8836,5.3978,13.0422,4.052,5.5002,83.8412,12.056,9.5936,61.7536,24.396,4.1576,8.2238,5.2108,3.059,31.976,15.4136,23.0908,59.4974],"y":[56.103604348639,50.9250562135116,49.1656923872968,54.193605740924,47.156455788445,45.271634186872,42.305302136078,49.4973099565417,55.9833595296141,53.7337592138741,50.2821839654619,57.8258663019847,52.5216312802673,54.7528925486277,51.2583357863096,46.8804592243367,51.5771049448334,53.0544604780929,64.1695753524461,63.9578508093031,36.3160750207073,52.9354308080062,49.8806851279236,43.6206987844267,49.2960439582558,53.0826273110589,52.1267547284102,54.7962015614243,44.0419454575121,53.4888748806758,43.7724117764748,41.4524655073085,48.5514382673123,50.4962473335789,58.4856890090749,48.7888355863171,43.5672640219595,55.1110276647482,51.2095505815438,55.2030643881777],"z":[4.6640107478523,15.3397835782213,7.08859223258845,8.81183580629608,15.3889503062328,4.63258565848197,5.28737063786354,9.468220308648,5.4222855949424,12.4388527657219,6.86537797250619,7.77564229493364,8.90041929882487,6.01244038956895,10.6491195791061,4.51267343748286,6.00793192569865,7.63666362750659,7.90058412190785,9.15364142172863,11.7093976398721,3.54363657234516,4.50404866243705,16.2425843217393,3.64184490386538,10.1825736161847,9.0992871497109,2.80443025263784,7.52003900763252,4.75559466835347,5.25993641550434,5.76775899410764,6.07218355333649,5.39341894917394,3.89632404160917,4.30703579012643,33.7550849139768,6.22023961495676,15.989866258056,1.96353790391526],"mode":"markers","type":"scatter3d","name":"4<br />high","marker":{"color":"rgba(127,255,212,1)","symbol":"square","line":{"color":"rgba(127,255,212,1)"}},"textfont":{"color":"rgba(127,255,212,1)"},"error_y":{"color":"rgba(127,255,212,1)"},"error_x":{"color":"rgba(127,255,212,1)"},"line":{"color":"rgba(127,255,212,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script> As income level rises (towards high income countries), adolescent fertility rate and age dependency ratio decrease, and CO2 emissions increase. There is a negative correlation between CO2 emissions and both the adolescent fertility rate and the age dependency ratio, and a positive correlation between adolescent fertility rate and the age dependency ratio. The income levels of each country exactly correspond to the clusters created through PAM.</p>
+<pre class="r"><code>#interpret means for numeric variables by cluster
+cluster %&gt;% group_by(cluster) %&gt;% summarize_if(is.numeric,mean,na.rm=T)</code></pre>
+<pre><code>## # A tibble: 4 x 4
+## cluster Adolescent_fertility_rate Age_dependency_ratio
+CO2_emissions_per_capita
+## &lt;fct&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 1 110.  87.2 0.193
+## 2 2 59.9 64.4 1.26
+## 3 3 47.0 52.5 4.30
+## 4 4 17.1 50.9 8.16</code></pre>
+<p>The means for adolescent fertility rate, age dependency ratio, and CO2 emissions per capita show a consistent upwards or downwards trend based on the cluster, which is associated with the income level of each country. Cluster 1 is low income, 2 is lower-middle, 3 is upper-middle, and 4 is high income. As income level increases (towards high income), adolescent fertility rate and age dependency ratio decrease, and CO2 emissions increase. Adolescent fertility rate in particular shows a significantly higher mean for low income countries as compared to the other three income levels.</p>
+</div>
+</div>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

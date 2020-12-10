@@ -1,0 +1,431 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: "SDS348"
+date: ''
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+Chung-Wing Ko
+ck25935
+
+## 0. (5 pts) Introduce dataset and variables
+####Introduce your dataset and each of your variables (or just your main variables if you have lots) in a paragraph. What are they measuring? How many observations?
+
+```{R}
+#loading libraries and importing datasets
+country <- read.csv("Country Data.csv")
+sustainability <- read.csv("Sustainability Stats.csv")
+population <- read.csv("Population.csv")
+library(dplyr)
+
+#joining datasets
+data <- inner_join(country, sustainability, by = "Country.Name")
+data <- inner_join(data, population, by = "Country.Name")
+
+#removing and renaming columns
+colnames(data)
+data <- data %>% select(-Time.x, -Time.Code.x, -Time.y, -Time.Code.y, -Country.Code.x, -Country.Code.y, -Year, -Year.Code, -Country.Code)
+data <- data %>% rename(Country_Name = Country.Name, GDP = GDP..current.US....NY.GDP.MKTP.CD., Death_rate = Death.rate..crude..per.1.000.people...SP.DYN.CDRT.IN., Age_dependency_ratio = Age.dependency.ratio....of.working.age.population...SP.POP.DPND., Adolescent_fertility_rate = Adolescent.fertility.rate..births.per.1.000.women.ages.15.19...SP.ADO.TFRT., CO2_emissions_per_capita = CO2.emissions..metric.tons.per.capita...EN.ATM.CO2E.PC., Forest_area = Forest.area....of.land.area...AG.LND.FRST.ZS., Drinking_services = People.using.at.least.basic.drinking.water.services....of.population...SH.H2O.BASW.ZS., Renewable_energy_consumption = Renewable.energy.consumption....of.total.final.energy.consumption...EG.FEC.RNEW.ZS., Population = Population..total..SP.POP.TOTL.)
+
+#omitting NA values
+data <- data %>% na.omit()
+
+#making new numeric variable
+data <- data %>% mutate(GDP_per_capita = GDP/Population)
+
+#making new categorical variable based on World Bank classifications
+data <- data %>% mutate(Income_Level = case_when(GDP_per_capita > 12535 ~ "high", GDP_per_capita <= 12535 & 4045 <= GDP_per_capita ~ "upper-middle", GDP_per_capita <= 4045 & 1035 <= GDP_per_capita ~ "lower-middle", GDP_per_capita <= 1035 ~ "low"))
+
+#reorder income level
+data$Income_Level <- factor(data$Income_Level, levels = c("low", "lower-middle", "upper-middle", "high"))
+
+#reordering variables in dataset
+data <- data %>% select(Country_Name, GDP, GDP_per_capita, Income_Level, CO2_emissions_per_capita, Population, everything())
+```
+
+I found three datasets through the World Bank Databank, found here: https://databank.worldbank.org/home.aspx. Datasets can be filtered based on countries, statistics, and years. I chose statistics from Gender Statistics, Poverty Statistics, and Sustainable Development Goals, using the year 2015 as the base year for all three datasets. The Gender Statistics dataset contained these variables: GDP, Death rate, Adolescent fertility rate, and Age dependency ratio. The Poverty Statistics dataset contains the Population statistic, and the Sustainability Development Goals dataset contains CO2 emissions per capita, Forest area, Renewable resource consumption, and Access to drinking water services. I'm particularly interested in how a country's income level (based on GDP) impacts societal issues such as access to drinking water and adolescent fertility rate, as well as sustainability variables such as CO2 emissions and forest cover. I expect higher GDP to correlate to a higher standard of living (lower death rate, lower adolescent fertility rate, lower age dependency ratio, more access to drinking water services) and worse sustainability initiatives (such as higher CO2, less forest cover, but higher renewable resource consumption). There are 173 observations for every variable. 
+
+## 1. (15 pts) MANOVA and followup ANOVAs and post-hoc tests
+####Perform a MANOVA testing whether any of your numeric variables (or a subset of them, if including them all is unreasonable or doesn't make sense) show a mean difference across levels of one of your categorical variables (3). If they do, perform univariate ANOVAs to find response(s) showing a mean difference across groups (3), and perform post-hoc t tests to find which groups differ (3). Discuss the number of tests you have performed, calculate the probability of at least one type I error (if unadjusted), and adjust the significance level accordingly (bonferroni correction) before discussing significant differences (3).
+
+```{R}
+#run overall MANOVA
+manova <- manova(cbind(GDP_per_capita, Death_rate, CO2_emissions_per_capita)~Income_Level, data=data)
+summary(manova)
+
+#follow up ANOVA tests
+summary.aov(manova)
+
+#post-hoc t tests
+pairwise.t.test(data$GDP_per_capita,data$Income_Level, p.adj="none")
+pairwise.t.test(data$Death_rate,data$Income_Level, p.adj="none")
+pairwise.t.test(data$CO2_emissions_per_capita,data$Income_Level, p.adj="none")
+
+#calculating probability of at least one type 1 error
+1 - (0.5^22)
+
+#bonferroni adjustment
+0.05/22
+```
+
+I conducted 1 MANOVA, 3 ANOVAs, and 18 pairwise t tests, for a total of 22 tests. There was a 99.99% chance of at least one type 1 error, so I adjusted the alpha level using a Bonferroni adjustment to set the alpha level to 0.0023. The MANOVA had a p value of p < 2.2e-16, allowing us to reject the null hypothesis that the mean GDP per capita, mean death rate, and mean CO2 emissions per capita are the same across all country income levels. I ran three univariate ANOVAs to test which of the three variables were significant. Both ANOVAs for GDP per capita and CO2 emissions per capita had a p value of p < 2.2e-16, allowing us to reject the null hypotheses that the mean GDP per capita and mean CO2 emissions per capita are the same across all country income levels. The ANOVA run for the death rate variable had a p value of 0.0058, which is greater than the adjusted alpha level, so we fail to reject the null hypothesis that the mean death rate is the same across all country income levels. Pairwise t tests for the GDP per capita variable revealed a significant difference between the high income level countries and every other income level, with p < 2.2e-16. Pairwise t tests for the CO2 emissions per capita variable revealed similar differences between mean emissions of the high income level countries and every other income level, as well as significant differences between mean emissions of the upper-middle income level and every other level. 
+
+####Briefly discuss MANOVA assumptions and whether or not they are likely to have been met (no need for anything too in-depth) (2).
+
+```{R}
+#assumptions
+##multivariate normality
+data %>% group_by(Income_Level) %>% summarize(n())
+##homogeneity of (co)variances
+covmats <- data %>% select(GDP_per_capita, Death_rate, CO2_emissions_per_capita, Income_Level) %>% group_by(Income_Level) %>% do(covs = cov(.[1:3]))
+for(i in 1:4){print(as.character(covmats$Income_Level[i])); print(covmats$covs[[i]])}
+```
+
+Regarding assumptions, random samples and independent observations was met. Multivariate normality of dependent variables was met, because every group had 25 or more samples. Examination of covariance matrices for each group revealed
+relative homogeneity. No univariate or multivariate outliers were evident and MANOVA
+was considered to be an appropriate analysis technique.
+
+## 2. (10 pts) Randomization test
+####Perform some kind of randomization test on your data (that makes sense). The statistic can be anything you want (mean difference, correlation, F-statistic/ANOVA, chi-squared), etc. State null and alternative hypotheses, perform the test, and interpret the results (7). Create a plot visualizing the null distribution and the test statistic (3).
+
+```{R}
+#load libraries
+library(vegan)
+
+#compute euclidean distances between all pairs of points in GDP per capita/Death rate/CO2 emissions space
+dists <- data %>% select(GDP_per_capita, Death_rate, CO2_emissions_per_capita) %>% dist
+adonis(dists ~ Income_Level,data=data)
+
+data %>% group_by(Income_Level) %>% summarize(n())
+
+#compute observed F stat
+SST <- sum(dists^2)/173
+SSW <- data %>% group_by(Income_Level) %>% select(Income_Level, GDP_per_capita, Death_rate, CO2_emissions_per_capita) %>% do(d=dist(.[2:4],"euclidean")) %>% ungroup() %>% summarize(sum(d[[1]]^2)/25 + sum(d[[2]]^2)/57+ sum(d[[3]]^2)/51 + sum(d[[4]]^2)/40) %>% pull
+F_obs<-((SST-SSW)/3)/(SSW/139)
+
+Fs <- replicate(1000,{
+  new <- data %>% mutate(Income_Level=sample(Income_Level)) 
+  SSW <- new %>% group_by(Income_Level) %>% select(Income_Level, GDP_per_capita, Death_rate, CO2_emissions_per_capita) %>%
+    do(d=dist(.[2:4],"euclidean")) %>% ungroup() %>% 
+    summarize(sum(d[[1]]^2)/25 + sum(d[[2]]^2)/57+ sum(d[[3]]^2)/51 + sum(d[[4]]^2)/40) %>% pull
+  ((SST-SSW)/3)/(SSW/139)
+})
+
+#plot
+{hist(Fs,prob = T); abline(v=F_obs, col="red", add=T)}
+
+#calculate p value
+mean(Fs>F_obs)
+```
+
+I conducted a randomization test on the F statistics for my data. The null hypothesis for this randomization test is that all group means are equal regardless of country income level, and the alternative hypothesis is that all groups do not have the same means. This test yielded a p-value of effectively 0, so we reject the null hypothesis and conclude that the mean GDP per capita, mean death rate, and/or mean CO2 emissions per capita differ based on country income level.
+
+## 3. (35 pts) Linear regression model
+####Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction. Interpret the coefficient estimates (do not discuss significance) (10)
+
+```{R}
+#center variables
+data$CO2_emissions_per_capita_c <- data$CO2_emissions_per_capita - mean(data$CO2_emissions_per_capita)
+data$Population_c <- data$Population - mean(data$Population)
+mean(data$Population)
+
+#linear regression model
+fit <- lm(CO2_emissions_per_capita_c ~ Population_c*Income_Level, data=data)
+summary(fit)
+```
+
+A low-income country with a population of 203481730 (global mean) would emit -3.39 metric tons per capita. For low-income countries, for every additional person to a country's population, there is a 9.56e-11 metric ton increase in CO2 emissions per capita, on average. For average populations, lower-middle income countries emit .056 more metric tons of CO2 emissions per capita than low-income countries. While holding population constant, upper-middle income countries emit 3.08 more metric tons of CO2 emissions per capita than low-income countries. While holding population constant, high income countries emit 7.21 more metric tons of CO2 emissions per capita than low-income countries. The slope of CO2 emissions per capita from population is 7.83e-11 units lower for a lower-middle income country than a low-income country. The slope of CO2 emissions per capita from population is 8.58e-12 units lower for a upper-middle income country than a low-income country. The slope of CO2 emissions per capita from population is .92e9 units higher for a high income country than a low-income country.
+
+####Plot the regression using `ggplot()` using geom_smooth(method="lm"). If your interaction is numeric by numeric, refer to code in the slides to make the plot or check out the `interactions` package, which makes this easier. If you have 3 or more predictors, just chose two of them to plot for convenience. (8)
+```{R}
+#plot regression
+data %>% ggplot(aes(x = Population_c, y = CO2_emissions_per_capita_c, color = Income_Level)) + geom_point() + geom_smooth(method = 'lm',se=F) + labs(x = "Population, centered", y = "CO2 emissions per capita, centered (metric tons)", title = "CO2 emissions per capita by country population and income level", color = "Income Level")
+```
+
+####Check assumptions of linearity, normality, and homoskedasticity either graphically or using a hypothesis test (4)
+
+```{R}
+#load libraries
+library(lmtest)
+
+#check homoskedasticity
+resids <- fit$residuals
+fitvals <- fit$fitted.values
+ggplot()+ geom_point(aes(fitvals,resids)) + geom_hline(yintercept=0, col="red")
+bptest(fit)
+
+#check linearity
+data %>% ggplot(aes(x = Population_c, y = CO2_emissions_per_capita_c)) + geom_point()
+
+#check normality
+ggplot()+geom_histogram(aes(resids),bins=20)
+ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(color = "red")
+ks.test(resids, "pnorm", sd=sd(resids))
+```
+
+We fail to reject the null hypothesis of homoskedasticity (BP = 9.0487, df = 7, p-value = 0.2492). We fail to reject the null hypothesis of normality (D = 0.22085, p-value = 9.368e-08). Eyeballing the scatterplot, there are no obvious nonlinear relationships.
+
+####Regardless, recompute regression results with robust standard errors via `coeftest(..., vcov=vcovHC(...))`. Discuss significance of results, including any changes from before/after robust SEs if applicable. (8)
+
+```{R}
+#load libraries
+library(sandwich)
+#redo regression with heteroskedasticity robust standard errors
+coeftest(fit, vcov = vcovHC(fit))
+```
+
+There are no changes to coefficients between robust SEs and uncorrected SEs, because the data passed homoskedasticity. However, the variable of lower-middle income level previously was not significant, and now is (p = 0.0001), showing that while holding population constant, lower-middle income countries emit .056 more metric tons of CO2 emissions per capita than low-income countries. All the p-values have decreased with robust SEs. 
+
+####What proportion of the variation in the outcome does your model explain? (4)
+```{R}
+summary(fit)$r.squared
+```
+
+My model explains 46.79% of the variation in CO2 emissions per capita. 
+
+## 4. (5 pts) Bootstrapped SEs
+####Rerun same regression model (with the interaction), but this time compute bootstrapped standard errors (either by resampling observations or residuals). Discuss any changes you observe in SEs and p-values using these SEs compared to the original SEs and the robust SEs)
+
+```{R}
+#resample observations from dataframe with replacement
+boot_dat <- sample_frac(data, replace=T)
+
+samp_distn <-replicate(5000, {
+  boot_dat <- sample_frac(data, replace=T)
+  fit <- lm(CO2_emissions_per_capita_c ~ Population_c*Income_Level, data=boot_dat)
+  coef(fit)
+})
+
+#standard errors
+samp_distn %>% t %>% as.data.frame %>% summarize_all(sd)
+
+#compare to normal-theory SEs
+summary(fit)$coef[,1:4]
+
+#compare to robust SEs
+coeftest(fit, vcov=vcovHC(fit))[,1:4]
+```
+
+Bootstrapped SEs, as compared to normal-theory SEs and robust SEs, are lower except for where the variable of high-income level is included. Therefore, bootstrapping generally decreases the p-value. The SE for the high-income variable and interaction between population and high-income level increased upon bootstrapping, increasing the p-value.
+
+## 5. (25 pts) Logistic model from two explanatory variables
+####Fit a logistic regression model predicting a binary variable (if you don't have one, make/get one) from at least two explanatory variables (interaction not necessary). 
+####Interpret coefficient estimates in context (10)
+
+```{R}
+#making binary variable of CO2 emissions
+data <- data %>% mutate(Carbon_Intensive = ifelse(CO2_emissions_per_capita > median(CO2_emissions_per_capita), 1, 0))
+
+#center variables
+data$GDP_per_capita_c <- data$GDP_per_capita - mean(data$GDP_per_capita)
+data$Population_c <- data$Population - mean(data$Population)
+
+#logistic model
+logfit <- glm(Carbon_Intensive ~ GDP_per_capita_c * Population_c, data = data, family = "binomial")
+coeftest(logfit)
+
+#convert to odds
+coef(logfit)%>%exp%>%round(5)%>%data.frame
+```
+
+I made a binary variable called "Carbon_Intensive," classifying countries into those that are carbon-intense and those that are not. I originally hoped to classify based on a cutoff, but scientists have not reached a consensus what a safe CO2 emissions cutoff is (https://e360.yale.edu/features/what_is_the_carbon_limit_that_depends_who_you_ask). Therefore, I classified countries based on the upper-half of emitters and the bottom-half, which may not be the most accurate way to create this variable so introduces some potential for error. 
+
+Based on an alpha-level of 0.05, only GDP per capita significantly explains whether a country is carbon-intensive. For countries with average population, increasing GDP per capita by $1 (US dollar) increases the odds of a country being carbon-intense by 0.302% (SE = 1.5183e-03, z = 1.9878, p = 0.04684). 
+
+For countries with average GDP per capita, increasing the population by 1 person increases the odds of a country being carbon-intense by 0.0000096% (SE = 5.78e-08, z = 1.6553, p = 0.09786). Increasing the population by one person additionally increases the slope of GDP per capita on the odds of a country being carbon-intense by 0.000000000127% (SE = 7.7487e-12, z = 1.6361, p = 0.10181).
+
+####Report a confusion matrix for your logistic regression (2)
+
+```{R}
+data$probs <- predict(logfit, type="response")
+predict <- data$probs > 0.5
+truth <- data$Carbon_Intensive
+table(predict, truth) %>% addmargins
+```
+
+####Compute and discuss the Accuracy, Sensitivity (TPR), Specificity (TNR), Precision (PPV), and AUC of your model (5)
+
+```{R}
+class_diag <- function(probs,truth){
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  #calculate AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  TPR=cumsum(truth)/max(1,sum(truth))
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum(((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]))
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+class_diag(data$probs, data$Carbon_Intensive)
+```
+
+My model has an accuracy of 89.6%, a sensitivity of 84.9%, a specificity of 94.3%, and a precision of 93.6%. This likely indicates a good AUC, which summarizes both sensitivity and specificity. The AUC is calculated to be 0.963, which indicates the model is a great predictor.
+
+####Using ggplot, make a density plot of the log-odds (logit) colored/grouped by your binary outcome variable (3)
+
+```{R}
+#get predicted log-odds
+data$logit <- predict(logfit, type="link")
+
+CarbonIntense <- as.factor(data$Carbon_Intensive)
+
+data %>% ggplot(aes(x = logit)) + geom_density(aes(color= CarbonIntense,fill= CarbonIntense), alpha=.4) + theme(legend.position=c(.85,.85)) + geom_vline(xintercept=0) + xlab("predictor (logit)")
+```
+
+####Generate an ROC curve (plot) and calculate AUC (either manually or with a package); interpret (5)
+
+```{R}
+library(plotROC)
+ROCplot<-ggplot(data)+geom_roc(aes(d=Carbon_Intensive,m=data$prob), n.cuts=0)+
+geom_segment(aes(x=0,xend=1,y=0,yend=1),lty=2)
+ROCplot
+calc_auc(ROCplot)
+```
+
+The AUC is 0.963, which shows the model is a great predictor overall.
+
+## 6. (25 pts) Logistic regression from all variables
+####Perform a logistic regression predicting the same binary response variable from *ALL* of the rest of your variables (the more, the better!) 
+
+```{R}
+datapt2 <- data %>% select(GDP, GDP_per_capita_c, Income_Level, Carbon_Intensive, Population_c, Death_rate, Adolescent_fertility_rate, Age_dependency_ratio, Forest_area, Renewable_energy_consumption, Drinking_services)
+
+fulllogfit <- glm(Carbon_Intensive ~ ., data = datapt2, family = "binomial")
+coeftest(fulllogfit)
+#convert to odds
+coef(fulllogfit)%>%exp%>%round(5)%>%data.frame
+```
+
+Based on this logistic regression, death rate and renewable energy consumption of each country are significant predictors as to whether a country is carbon-intensive. While holding all other variables constant, increasing the death rate by 1 person (measured by the number of deaths per 1000 population) increases the odds of a country being carbon-intense by 36% (SE = 1.4626e-01, z = 2.0784, p = 0.037672). While holding all other variables constant, increasing the renewable energy consumption by 1% (measured as a % of total final energy consumption) decreases the odds of a country being carbon-intense by 6.65% (SE = 2.4854e-02, z = -2.7668, p = 0.005661).
+
+####Fit model, compute in-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, AUC), and interpret (5)
+
+```{R}
+probs <- predict(fulllogfit, type = "response")
+class_diag(probs, datapt2$Carbon_Intensive)
+```
+
+My model has an accuracy of 91.9%, a sensitivity of 93.02%, a specificity of 90.8%, and a precision of 90.9%. The AUC is 0.982, which indicates the model is a great predictor and is even higher than the previous model.
+
+####Perform 10-fold (or repeated random sub-sampling) CV with the same model and report average out-of-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, and AUC); interpret AUC and compare with the in-sample metrics (10)
+
+```{R}
+set.seed(1234)
+k=10
+
+#randomly order rows
+data1 <- datapt2[sample(nrow(datapt2)),]
+#create 10 folds
+folds <- cut(seq(1:nrow(datapt2)),breaks=k,labels=F)
+
+diags<-NULL
+for(i in 1:k){
+  ## create training and test sets
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,]
+  truth1<-test$Carbon_Intensive
+  
+  ## train model on training set
+  fit <- glm(Carbon_Intensive ~ ., data = datapt2, family = "binomial")
+  probs <- predict(fit, newdata = test, type="response")
+  
+  ## test model on test set (save all k results)
+  diags <- rbind(diags, class_diag(probs,truth1))
+}
+
+
+summarize_all(diags,mean)
+```
+
+My model has an accuracy of 91.9%, a sensitivity of 91.67%, a specificity of 90.5%, and a precision of 91.4%. The AUC is 0.983. These values are extremely close to the previous in-sample metrics, but the AUC slightly increased from 0.982. 
+
+####Perform LASSO on the same model/variables. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., `lambda.1se`). Discuss which variables are retained. (5)
+
+```{R}
+#import libraries
+library(glmnet)
+
+#response and predictors (dropping intercept)
+y<-as.matrix(datapt2$Carbon_Intensive) #grab response
+x<-model.matrix(Carbon_Intensive ~ ., data = datapt2)[,-1]
+x<-scale(x)
+head(x)
+
+glm(y~x,family=binomial)
+
+#pick an optimal value for lambda through 10-fold CV
+cv <- cv.glmnet(x,y, family="binomial")
+
+#make a plot of the coefficients for different values of lambda
+{plot(cv$glmnet.fit, "lambda", label=TRUE); abline(v = log(cv$lambda.1se)); abline(v = log(cv$lambda.min),lty=2)}
+
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+```
+
+Of the previous model, GDP per capita (centered), lower-middle and high income level (compared to low income level), death rate, age dependency ratio, renewable energy consumption, and drinking services were retained.
+
+####Perform 10-fold CV using only the variables lasso selected: compare model's out-of-sample AUC to that of your logistic regressions above (5)
+
+```{R}
+#cross-validating lasso model
+set.seed(1234)
+k=10
+
+data <- datapt2 %>% sample_frac
+folds <- ntile(1:nrow(data),n=10)
+
+diags<-NULL
+for(i in 1:k){
+  train <- data[folds!=i,]
+  test <- data[folds==i,]
+  truth <- test$Carbon_Intensive
+  
+  fit <- glm(Carbon_Intensive~ GDP_per_capita_c + Income_Level + Death_rate + Age_dependency_ratio + Renewable_energy_consumption + Drinking_services, 
+             data=datapt2, family="binomial")
+  probs <- predict(fit, newdata=test, type="response")
+  
+  diags<-rbind(diags,class_diag(predict(fit, type="response"), datapt2$Carbon_Intensive))
+}
+
+diags%>%summarize_all(mean)
+```
+
+The AUC is 0.978, which is the best CV performance yet for predicting whether a country is carbon-intensive. 
+...

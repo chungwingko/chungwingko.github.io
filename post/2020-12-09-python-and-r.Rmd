@@ -1,0 +1,9 @@
+---
+title: Python and R
+author: ''
+date: '2020-12-09'
+slug: python-and-r
+categories: []
+tags: []
+description: ''
+---
